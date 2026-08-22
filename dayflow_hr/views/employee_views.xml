@@ -61,7 +61,7 @@
                         <field name="df_gender"/>
                     </group>
                     <group string="Payroll Summary">
-                        <field name="df_payroll_ids" readonly="1" nolabel="1">
+                        <field name="df_payroll_ids" readonly="True" nolabel="1">
                             <tree string="Payroll Records">
                                 <field name="pay_period"/>
                                 <field name="gross_salary"/>

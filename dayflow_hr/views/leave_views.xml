@@ -73,7 +73,7 @@
                                readonly="state != 'draft'"/>
                         <field name="date_to"
                                readonly="state != 'draft'"/>
-                        <field name="number_of_days" readonly="1"/>
+                        <field name="number_of_days" readonly="True"/>
                         <field name="remarks"
                                readonly="state != 'draft'"/>
                     </group>
@@ -81,8 +81,8 @@
                     <group string="HR Decision"
                            groups="dayflow_hr.group_dayflow_hr_admin">
                         <field name="hr_comment"/>
-                        <field name="approved_by" readonly="1"/>
-                        <field name="approved_date" readonly="1"/>
+                        <field name="approved_by" readonly="True"/>
+                        <field name="approved_date" readonly="True"/>
                     </group>
                 </sheet>
                 <div class="oe_chatter">

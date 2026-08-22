@@ -73,7 +73,7 @@
                         <field name="house_rent_allowance"/>
                         <field name="transport_allowance"/>
                         <field name="other_allowances"/>
-                        <field name="gross_salary" readonly="1"/>
+                        <field name="gross_salary" readonly="True"/>
                     </group>
                     <!-- Deductions: HR Admin editable -->
                     <group string="Deductions"
@@ -81,10 +81,10 @@
                         <field name="provident_fund"/>
                         <field name="tax_deduction"/>
                         <field name="other_deductions"/>
-                        <field name="total_deductions" readonly="1"/>
+                        <field name="total_deductions" readonly="True"/>
                     </group>
                     <group string="Net">
-                        <field name="net_salary" readonly="1"/>
+                        <field name="net_salary" readonly="True"/>
                     </group>
                     <group string="Notes"
                            groups="dayflow_hr.group_dayflow_hr_admin">
