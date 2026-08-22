@@ -25,7 +25,8 @@ INTEGRATION CONTRACT:
     create | update | approve | reject | submit | confirm | archive | other
 """
 
-from odoo import fields, models
+# pyrefly: ignore [missing-import]
+from odoo import fields, models  # type: ignore
 
 
 class DayflowAuditLog(models.Model):
@@ -37,7 +38,7 @@ class DayflowAuditLog(models.Model):
         comodel_name='res.users',
         string='Changed By',
         required=True,
-        ondelete='set null',
+        ondelete='cascade',
         readonly=True,
         index=True,
     )

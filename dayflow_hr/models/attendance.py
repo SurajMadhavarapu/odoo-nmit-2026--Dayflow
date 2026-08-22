@@ -26,8 +26,9 @@ INTEGRATION CONTRACT (stable — do not rename):
     dayflow_hr.group_dayflow_hr_admin
 """
 
-from odoo import api, fields, models, _
-from odoo.exceptions import ValidationError
+# pyrefly: ignore [missing-import]
+from odoo import api, fields, models, _  # type: ignore
+from odoo.exceptions import ValidationError  # type: ignore
 
 
 class DayflowAttendance(models.Model):
@@ -118,7 +119,7 @@ class DayflowAttendance(models.Model):
     def _check_times(self):
         for rec in self:
             if rec.check_in and rec.check_out:
-                if rec.check_out <= rec.check_in:
+                if rec.check_out < rec.check_in:
                     raise ValidationError(
                         _('Check-out time must be after check-in time for %s on %s.')
                         % (rec.employee_id.name, rec.date)

@@ -39,8 +39,8 @@
                        groups="dayflow_hr.group_dayflow_hr_admin"/>
             </xpath>
 
-            <!-- Dayflow tab after the Private Information tab -->
-            <xpath expr="//page[@name='private_information']" position="after">
+            <!-- Dayflow tab inside notebook -->
+            <xpath expr="//notebook" position="inside">
                 <page string="Dayflow HR" name="dayflow_hr_tab">
                     <group string="Employment"
                            groups="dayflow_hr.group_dayflow_hr_admin">
@@ -62,12 +62,12 @@
                     </group>
                     <group string="Payroll Summary">
                         <field name="df_payroll_ids" readonly="1" nolabel="1">
-                            <list string="Payroll Records">
+                            <tree string="Payroll Records">
                                 <field name="pay_period"/>
                                 <field name="gross_salary"/>
                                 <field name="net_salary"/>
                                 <field name="state"/>
-                            </list>
+                            </tree>
                         </field>
                     </group>
                 </page>
