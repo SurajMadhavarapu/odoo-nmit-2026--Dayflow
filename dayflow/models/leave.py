@@ -147,7 +147,9 @@ class DayflowLeaveRequest(models.Model):
         for rec in self:
             if rec.state not in ('approved', 'pending'):
                 continue
-            overlap = self.search([
+            if not (rec.date_from and rec.date_to and rec.employee_id):
+                continue
+            overlap = self.sudo().search([
                 ('employee_id', '=', rec.employee_id.id),
                 ('id', '!=', rec.id),
                 ('state', 'in', ('approved', 'pending')),
@@ -277,7 +279,8 @@ class DayflowLeaveRequest(models.Model):
                     _('You are not authorised to modify HR-only fields: %s')
                     % ', '.join(blocked)
                 )
-            if 'state' in vals:
+            # Block direct state writes from employees — they must use action_submit()
+            if 'state' in vals and vals['state'] != 'pending':
                 raise UserError(
                     _('Use the Submit button to change leave request status.')
                 )

@@ -40,32 +40,40 @@
                             <field name="df_gender"/>
                         </group>
 
-                        <separator string="Attendance Summary (read-only)"/>
-                        <field name="df_attendance_ids" readonly="1">
-                            <tree>
+                        <separator string="Attendance Summary"/>
+                        <field name="df_attendance_ids"
+                               mode="tree"
+                               readonly="1"
+                               nolabel="1">
+                            <tree string="Attendance"
+                                  create="false" edit="false" delete="false"
+                                  decoration-success="status == 'present'"
+                                  decoration-warning="status == 'half_day'"
+                                  decoration-danger="status == 'absent'"
+                                  decoration-info="status == 'leave'">
                                 <field name="date"/>
                                 <field name="check_in"/>
                                 <field name="check_out"/>
                                 <field name="worked_hours" widget="float_time"/>
-                                <field name="status"
-                                       decoration-success="status == 'present'"
-                                       decoration-warning="status == 'half_day'"
-                                       decoration-danger="status == 'absent'"
-                                       decoration-info="status == 'leave'"/>
+                                <field name="status"/>
                             </tree>
                         </field>
 
-                        <separator string="Leave Requests (read-only)"/>
-                        <field name="df_leave_ids" readonly="1">
-                            <tree>
+                        <separator string="Leave Requests"/>
+                        <field name="df_leave_ids"
+                               mode="tree"
+                               readonly="1"
+                               nolabel="1">
+                            <tree string="Leave Requests"
+                                  create="false" edit="false" delete="false"
+                                  decoration-success="state == 'approved'"
+                                  decoration-danger="state == 'rejected'"
+                                  decoration-warning="state in ('draft','pending')">
                                 <field name="leave_type"/>
                                 <field name="date_from"/>
                                 <field name="date_to"/>
                                 <field name="number_of_days"/>
-                                <field name="state"
-                                       decoration-success="state == 'approved'"
-                                       decoration-danger="state == 'rejected'"
-                                       decoration-warning="state in ('draft','pending')"/>
+                                <field name="state"/>
                             </tree>
                         </field>
 

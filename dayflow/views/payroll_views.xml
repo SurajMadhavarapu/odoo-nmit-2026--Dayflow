@@ -39,7 +39,9 @@
 
         <!-- ============================================================
              PAYROLL — Form View
-             HR Admin: full edit; Employee: read-only own record
+             All salary fields are read-only to employees via model write().
+             The form itself uses attrs to make fields editable only when
+             draft AND the user is HR Admin (enforced at model level anyway).
         ============================================================ -->
         <record id="view_dayflow_payroll_form" model="ir.ui.view">
             <field name="name">dayflow.payroll.form</field>
@@ -68,81 +70,60 @@
                                statusbar_visible="draft,confirmed,paid"/>
                     </header>
                     <sheet>
+                        <!-- Header: employee + period -->
                         <group>
                             <group string="Employee">
                                 <field name="employee_id"
-                                       attrs="{'readonly': [('state', '!=', 'draft')]}"
-                                       groups="dayflow.group_dayflow_hr_admin"/>
-                                <field name="employee_id" readonly="1"
-                                       groups="dayflow.group_dayflow_employee"/>
+                                       attrs="{'readonly': [('state', '!=', 'draft')]}"/>
                                 <field name="pay_period"
-                                       attrs="{'readonly': [('state', '!=', 'draft')]}"
-                                       groups="dayflow.group_dayflow_hr_admin"/>
-                                <field name="pay_period" readonly="1"
-                                       groups="dayflow.group_dayflow_employee"/>
+                                       attrs="{'readonly': [('state', '!=', 'draft')]}"/>
                                 <field name="currency_id"
+                                       attrs="{'readonly': [('state', '!=', 'draft')]}"
                                        groups="dayflow.group_dayflow_hr_admin"/>
                             </group>
                         </group>
 
+                        <!-- Earnings -->
                         <group string="Earnings">
                             <group>
                                 <field name="basic_salary"
-                                       attrs="{'readonly': [('state', '!=', 'draft')]}"
-                                       groups="dayflow.group_dayflow_hr_admin"/>
-                                <field name="basic_salary" readonly="1"
-                                       groups="dayflow.group_dayflow_employee"/>
+                                       attrs="{'readonly': [('state', '!=', 'draft')]}"/>
                                 <field name="house_rent_allowance"
-                                       attrs="{'readonly': [('state', '!=', 'draft')]}"
-                                       groups="dayflow.group_dayflow_hr_admin"/>
-                                <field name="house_rent_allowance" readonly="1"
-                                       groups="dayflow.group_dayflow_employee"/>
+                                       attrs="{'readonly': [('state', '!=', 'draft')]}"/>
                                 <field name="transport_allowance"
-                                       attrs="{'readonly': [('state', '!=', 'draft')]}"
-                                       groups="dayflow.group_dayflow_hr_admin"/>
-                                <field name="transport_allowance" readonly="1"
-                                       groups="dayflow.group_dayflow_employee"/>
+                                       attrs="{'readonly': [('state', '!=', 'draft')]}"/>
                                 <field name="other_allowances"
-                                       attrs="{'readonly': [('state', '!=', 'draft')]}"
-                                       groups="dayflow.group_dayflow_hr_admin"/>
-                                <field name="other_allowances" readonly="1"
-                                       groups="dayflow.group_dayflow_employee"/>
+                                       attrs="{'readonly': [('state', '!=', 'draft')]}"/>
                             </group>
                             <group>
                                 <field name="gross_salary" readonly="1"/>
                             </group>
                         </group>
 
+                        <!-- Deductions -->
                         <group string="Deductions">
                             <group>
                                 <field name="provident_fund"
-                                       attrs="{'readonly': [('state', '!=', 'draft')]}"
-                                       groups="dayflow.group_dayflow_hr_admin"/>
-                                <field name="provident_fund" readonly="1"
-                                       groups="dayflow.group_dayflow_employee"/>
+                                       attrs="{'readonly': [('state', '!=', 'draft')]}"/>
                                 <field name="tax_deduction"
-                                       attrs="{'readonly': [('state', '!=', 'draft')]}"
-                                       groups="dayflow.group_dayflow_hr_admin"/>
-                                <field name="tax_deduction" readonly="1"
-                                       groups="dayflow.group_dayflow_employee"/>
+                                       attrs="{'readonly': [('state', '!=', 'draft')]}"/>
                                 <field name="other_deductions"
-                                       attrs="{'readonly': [('state', '!=', 'draft')]}"
-                                       groups="dayflow.group_dayflow_hr_admin"/>
-                                <field name="other_deductions" readonly="1"
-                                       groups="dayflow.group_dayflow_employee"/>
+                                       attrs="{'readonly': [('state', '!=', 'draft')]}"/>
                             </group>
                             <group>
                                 <field name="total_deductions" readonly="1"/>
                             </group>
                         </group>
 
+                        <!-- Net -->
                         <group string="Net Pay">
                             <field name="net_salary" readonly="1"/>
                         </group>
 
+                        <!-- Internal HR notes: hidden from employee group entirely -->
                         <group string="Notes" groups="dayflow.group_dayflow_hr_admin">
                             <field name="notes" nolabel="1"
-                                   placeholder="Internal HR notes — not visible to employee..."/>
+                                   placeholder="Internal HR notes — not visible to employees..."/>
                         </group>
                     </sheet>
                     <div class="oe_chatter">
