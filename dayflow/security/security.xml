@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- ============================================================
+             DAYFLOW SECURITY GROUPS
+             ============================================================ -->
+
+        <!-- Category -->
+        <record id="module_category_dayflow" model="ir.module.category">
+            <field name="name">Dayflow HRMS</field>
+            <field name="description">Dayflow Human Resource Management System</field>
+            <field name="sequence">10</field>
+        </record>
+
+        <!-- Group: Employee (base access) -->
+        <record id="group_dayflow_employee" model="res.groups">
+            <field name="name">Employee</field>
+            <field name="category_id" ref="module_category_dayflow"/>
+            <field name="comment">
+                Regular employee access: view own profile, attendance, leave, salary.
+                Cannot manage other employees or approve leave.
+            </field>
+        </record>
+
+        <!-- Group: HR Admin (full management access) -->
+        <record id="group_dayflow_hr_admin" model="res.groups">
+            <field name="name">HR / Admin</field>
+            <field name="category_id" ref="module_category_dayflow"/>
+            <field name="implied_ids" eval="[(4, ref('group_dayflow_employee'))]"/>
+            <field name="comment">
+                HR Officer / Admin access: manage all employees, attendance records,
+                approve/reject leave, view and update payroll, audit logs.
+            </field>
+            <field name="users" eval="[(4, ref('base.user_admin'))]"/>
+        </record>
+
+    </data>
+</odoo>
