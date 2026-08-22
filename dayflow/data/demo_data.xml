@@ -1,16 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
     Dayflow Demo Data
-    Owner: Harshith (Testing & Demo) — extend this in your branch.
-    Stub author: Mani — provides the minimum dataset to demonstrate the full workflow.
+    Provides the minimum dataset to demonstrate the complete workflow.
 
-    Credentials for all demo users: Dayflow@123
+    Demo credentials (all users): Dayflow@123
 
     Users:
-      priya.sharma@dayflow.demo — HR Admin
-      ravi.kumar@dayflow.demo   — Employee
-      anita.reddy@dayflow.demo  — Employee
-      kiran.patel@dayflow.demo  — Employee
+      priya.sharma@dayflow.demo  — HR Admin
+      ravi.kumar@dayflow.demo    — Employee
+      anita.reddy@dayflow.demo   — Employee
+      kiran.patel@dayflow.demo   — Employee
 -->
 <odoo>
     <data noupdate="1">
@@ -19,7 +18,7 @@
              DEMO USERS
         ============================================================ -->
 
-        <record id="user_hr_admin" model="res.users">
+        <record id="user_hr_priya" model="res.users">
             <field name="name">Priya Sharma</field>
             <field name="login">priya.sharma@dayflow.demo</field>
             <field name="password">Dayflow@123</field>
@@ -61,7 +60,7 @@
 
         <!-- ============================================================
              DEMO hr.employee RECORDS
-             All Dayflow fields use the canonical df_ prefix.
+             All Dayflow custom fields use the canonical df_ prefix.
         ============================================================ -->
 
         <record id="emp_priya" model="hr.employee">
@@ -71,9 +70,10 @@
             <field name="job_title">HR Manager</field>
             <field name="df_phone">+91 98765 00001</field>
             <field name="df_address">12 MG Road, Bangalore, Karnataka 560001</field>
-            <field name="employment_type">full_time</field>
-            <field name="date_joined">2022-01-10</field>
-            <field name="user_id" ref="user_hr_admin"/>
+            <field name="df_employment_type">full_time</field>
+            <field name="df_joining_date">2022-01-10</field>
+            <field name="df_role">hr_admin</field>
+            <field name="user_id" ref="user_hr_priya"/>
         </record>
 
         <record id="emp_ravi" model="hr.employee">
@@ -83,8 +83,9 @@
             <field name="job_title">Software Engineer</field>
             <field name="df_phone">+91 98765 00002</field>
             <field name="df_address">45 Koramangala, Bangalore, Karnataka 560034</field>
-            <field name="employment_type">full_time</field>
-            <field name="date_joined">2023-06-01</field>
+            <field name="df_employment_type">full_time</field>
+            <field name="df_joining_date">2023-06-01</field>
+            <field name="df_role">employee</field>
             <field name="user_id" ref="user_emp_ravi"/>
         </record>
 
@@ -95,8 +96,9 @@
             <field name="job_title">QA Engineer</field>
             <field name="df_phone">+91 98765 00003</field>
             <field name="df_address">78 Whitefield, Bangalore, Karnataka 560066</field>
-            <field name="employment_type">full_time</field>
-            <field name="date_joined">2023-09-15</field>
+            <field name="df_employment_type">full_time</field>
+            <field name="df_joining_date">2023-09-15</field>
+            <field name="df_role">employee</field>
             <field name="user_id" ref="user_emp_anita"/>
         </record>
 
@@ -107,17 +109,18 @@
             <field name="job_title">UI Designer</field>
             <field name="df_phone">+91 98765 00004</field>
             <field name="df_address">23 HSR Layout, Bangalore, Karnataka 560102</field>
-            <field name="employment_type">contract</field>
-            <field name="date_joined">2024-02-01</field>
+            <field name="df_employment_type">contract</field>
+            <field name="df_joining_date">2024-02-01</field>
+            <field name="df_role">employee</field>
             <field name="user_id" ref="user_emp_kiran"/>
         </record>
 
         <!-- ============================================================
-             DEMO ATTENDANCE RECORDS
+             DEMO ATTENDANCE
              Covers: Present, Half-day, Leave, Absent
         ============================================================ -->
 
-        <record id="att_ravi_present" model="dayflow.attendance">
+        <record id="att_ravi_20_present" model="dayflow.attendance">
             <field name="employee_id" ref="emp_ravi"/>
             <field name="date">2026-08-20</field>
             <field name="check_in">2026-08-20 09:00:00</field>
@@ -125,7 +128,7 @@
             <field name="status">present</field>
         </record>
 
-        <record id="att_ravi_halfday" model="dayflow.attendance">
+        <record id="att_ravi_19_halfday" model="dayflow.attendance">
             <field name="employee_id" ref="emp_ravi"/>
             <field name="date">2026-08-19</field>
             <field name="check_in">2026-08-19 09:00:00</field>
@@ -133,7 +136,13 @@
             <field name="status">half_day</field>
         </record>
 
-        <record id="att_anita_present" model="dayflow.attendance">
+        <record id="att_ravi_18_absent" model="dayflow.attendance">
+            <field name="employee_id" ref="emp_ravi"/>
+            <field name="date">2026-08-18</field>
+            <field name="status">absent</field>
+        </record>
+
+        <record id="att_anita_20_present" model="dayflow.attendance">
             <field name="employee_id" ref="emp_anita"/>
             <field name="date">2026-08-20</field>
             <field name="check_in">2026-08-20 08:45:00</field>
@@ -141,13 +150,13 @@
             <field name="status">present</field>
         </record>
 
-        <record id="att_kiran_leave" model="dayflow.attendance">
+        <record id="att_kiran_20_leave" model="dayflow.attendance">
             <field name="employee_id" ref="emp_kiran"/>
             <field name="date">2026-08-20</field>
             <field name="status">leave</field>
         </record>
 
-        <record id="att_kiran_absent" model="dayflow.attendance">
+        <record id="att_kiran_19_absent" model="dayflow.attendance">
             <field name="employee_id" ref="emp_kiran"/>
             <field name="date">2026-08-19</field>
             <field name="status">absent</field>
@@ -155,71 +164,90 @@
 
         <!-- ============================================================
              DEMO LEAVE REQUESTS
-             Covers: Approved, Pending, Rejected
+             Covers: approved (Kiran, sick), draft/pending (Ravi, paid), rejected (Anita, unpaid)
         ============================================================ -->
 
-        <record id="leave_kiran_approved" model="dayflow.leave.request">
+        <!-- Kiran: Sick leave — APPROVED -->
+        <record id="leave_kiran_sick_approved" model="dayflow.leave.request">
             <field name="employee_id" ref="emp_kiran"/>
             <field name="leave_type">sick</field>
             <field name="date_from">2026-08-20</field>
             <field name="date_to">2026-08-21</field>
             <field name="remarks">Fever and cold. Doctor advised rest.</field>
-            <field name="status">approved</field>
-            <field name="approved_by" ref="user_hr_admin"/>
+            <field name="state">approved</field>
+            <field name="approved_by" ref="user_hr_priya"/>
             <field name="approved_date">2026-08-19 10:00:00</field>
-            <field name="hr_comment">Approved. Please submit medical certificate on return.</field>
+            <field name="hr_comment">Approved. Please submit a medical certificate on return.</field>
         </record>
 
-        <record id="leave_ravi_pending" model="dayflow.leave.request">
+        <!-- Ravi: Paid leave — DRAFT (to be submitted by employee in demo) -->
+        <record id="leave_ravi_paid_draft" model="dayflow.leave.request">
             <field name="employee_id" ref="emp_ravi"/>
             <field name="leave_type">paid</field>
             <field name="date_from">2026-08-25</field>
             <field name="date_to">2026-08-27</field>
             <field name="remarks">Family function — need 3 days off.</field>
-            <field name="status">draft</field>
+            <field name="state">draft</field>
         </record>
 
-        <record id="leave_anita_rejected" model="dayflow.leave.request">
+        <!-- Anita: Unpaid leave — REJECTED -->
+        <record id="leave_anita_unpaid_rejected" model="dayflow.leave.request">
             <field name="employee_id" ref="emp_anita"/>
             <field name="leave_type">unpaid</field>
             <field name="date_from">2026-08-18</field>
             <field name="date_to">2026-08-18</field>
             <field name="remarks">Personal errand.</field>
-            <field name="status">rejected</field>
-            <field name="approved_by" ref="user_hr_admin"/>
+            <field name="state">rejected</field>
+            <field name="approved_by" ref="user_hr_priya"/>
             <field name="approved_date">2026-08-17 14:00:00</field>
             <field name="hr_comment">Sprint deadline this week. Please reschedule.</field>
         </record>
 
         <!-- ============================================================
-             DEMO PAYROLL RECORDS
+             DEMO PAYROLL
+             One record per employee for August 2026.
         ============================================================ -->
 
         <record id="payroll_ravi" model="dayflow.payroll">
             <field name="employee_id" ref="emp_ravi"/>
-            <field name="effective_date">2026-08-01</field>
+            <field name="pay_period">August 2026</field>
             <field name="basic_salary">75000.00</field>
-            <field name="allowances">10000.00</field>
-            <field name="deductions">8000.00</field>
-            <field name="notes">August 2026 salary structure</field>
+            <field name="house_rent_allowance">15000.00</field>
+            <field name="transport_allowance">3000.00</field>
+            <field name="other_allowances">2000.00</field>
+            <field name="provident_fund">9000.00</field>
+            <field name="tax_deduction">7000.00</field>
+            <field name="other_deductions">0.00</field>
+            <field name="state">confirmed</field>
+            <field name="notes">August 2026 salary — confirmed by HR.</field>
         </record>
 
         <record id="payroll_anita" model="dayflow.payroll">
             <field name="employee_id" ref="emp_anita"/>
-            <field name="effective_date">2026-08-01</field>
+            <field name="pay_period">August 2026</field>
             <field name="basic_salary">65000.00</field>
-            <field name="allowances">8000.00</field>
-            <field name="deductions">7000.00</field>
-            <field name="notes">August 2026 salary structure</field>
+            <field name="house_rent_allowance">13000.00</field>
+            <field name="transport_allowance">2500.00</field>
+            <field name="other_allowances">1500.00</field>
+            <field name="provident_fund">7800.00</field>
+            <field name="tax_deduction">6000.00</field>
+            <field name="other_deductions">0.00</field>
+            <field name="state">confirmed</field>
+            <field name="notes">August 2026 salary — confirmed by HR.</field>
         </record>
 
         <record id="payroll_kiran" model="dayflow.payroll">
             <field name="employee_id" ref="emp_kiran"/>
-            <field name="effective_date">2026-08-01</field>
+            <field name="pay_period">August 2026</field>
             <field name="basic_salary">60000.00</field>
-            <field name="allowances">7500.00</field>
-            <field name="deductions">6500.00</field>
-            <field name="notes">August 2026 salary structure</field>
+            <field name="house_rent_allowance">12000.00</field>
+            <field name="transport_allowance">2000.00</field>
+            <field name="other_allowances">1000.00</field>
+            <field name="provident_fund">7200.00</field>
+            <field name="tax_deduction">5500.00</field>
+            <field name="other_deductions">0.00</field>
+            <field name="state">draft</field>
+            <field name="notes">August 2026 — pending confirmation.</field>
         </record>
 
     </data>
