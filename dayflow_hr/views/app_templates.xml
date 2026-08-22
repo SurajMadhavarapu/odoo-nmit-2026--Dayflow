@@ -491,7 +491,16 @@
                     loading: false,
                     error: null,
                     successMsg: null,
-                    checkedIn: false
+                    checkedIn: false,
+                    signupForm: {
+                        empId: '',
+                        name: '',
+                        email: '',
+                        role: 'Employee'
+                    },
+                    loginForm: {
+                        email: ''
+                    }
                 };
 
                 // Helper to execute JSON-RPC API requests to Dayflow Odoo backend
@@ -547,19 +556,25 @@
                 // Action: Login Submit
                 async function handleLogin(e) {
                     e.preventDefault();
-                    state.error = null;
-                    state.loading = true;
-                    render();
+                    
+                    const emailInput = document.getElementById('login-email');
+                    const passwordInput = document.getElementById('login-password');
 
-                    const email = document.getElementById('login-email').value.trim();
-                    const password = document.getElementById('login-password').value.trim();
+                    const email = emailInput ? emailInput.value.trim() : '';
+                    const password = passwordInput ? passwordInput.value.trim() : '';
+
+                    state.loginForm = { email };
+                    state.error = null;
+                    state.successMsg = null;
 
                     if (!email || !password) {
                         state.error = 'EMAIL AND PASSWORD REQUIRED.';
-                        state.loading = false;
                         render();
                         return;
                     }
+
+                    state.loading = true;
+                    render();
 
                     try {
                         const result = await callApi('/dayflow/auth/login', { login: email, password: password });
@@ -567,6 +582,7 @@
                             state.user = result;
                             state.view = result.role === 'hr_admin' ? 'HR_ADMIN_DASHBOARD' : 'EMPLOYEE_DASHBOARD';
                             state.error = null;
+                            state.loginForm = { email: '' };
                         } else {
                             state.error = result.message || 'INVALID LOGIN CREDENTIALS.';
                         }
@@ -581,20 +597,25 @@
                 // Action: Signup Submit
                 async function handleSignup(e) {
                     e.preventDefault();
+
+                    const empIdInput = document.getElementById('signup-empid');
+                    const nameInput = document.getElementById('signup-name');
+                    const emailInput = document.getElementById('signup-email');
+                    const passwordInput = document.getElementById('signup-password');
+                    const roleInput = document.getElementById('signup-role');
+
+                    const empId = empIdInput ? empIdInput.value.trim() : '';
+                    const name = nameInput ? nameInput.value.trim() : '';
+                    const email = emailInput ? emailInput.value.trim() : '';
+                    const password = passwordInput ? passwordInput.value.trim() : '';
+                    const role = roleInput ? roleInput.value.trim() : '';
+
+                    state.signupForm = { empId, name, email, role: role || 'Employee' };
                     state.error = null;
                     state.successMsg = null;
-                    state.loading = true;
-                    render();
 
-                    const empId = document.getElementById('signup-empid').value.trim();
-                    const name = document.getElementById('signup-name').value.trim();
-                    const email = document.getElementById('signup-email').value.trim();
-                    const password = document.getElementById('signup-password').value.trim();
-                    const role = document.getElementById('signup-role').value;
-
-                    if (!empId || !name || !email || !password) {
+                    if (!empId || !name || !email || !password || !role) {
                         state.error = 'ALL FIELDS ARE REQUIRED.';
-                        state.loading = false;
                         render();
                         return;
                     }
@@ -602,10 +623,12 @@
                     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                     if (!emailRegex.test(email)) {
                         state.error = 'INVALID EMAIL FORMAT.';
-                        state.loading = false;
                         render();
                         return;
                     }
+
+                    state.loading = true;
+                    render();
 
                     try {
                         const result = await callApi('/dayflow/auth/register', {
@@ -618,6 +641,7 @@
 
                         if (result && result.status === 'success') {
                             state.successMsg = 'ACCOUNT REGISTERED! LOGGING IN...';
+                            state.signupForm = { empId: '', name: '', email: '', role: 'Employee' };
                             render();
                             
                             const loginRes = await callApi('/dayflow/auth/login', { login: email, password: password });
@@ -711,7 +735,7 @@
                                 <div class="auth-card">
                                     <div class="auth-header">
                                         <div class="brand-logo" style="margin-bottom: 0.75rem;">
-                                            DAYFLOW
+                                             DAYFLOW
                                             <span class="brand-badge">SYSTEM</span>
                                         </div>
                                         <h1 class="auth-title">AUTHENTICATE</h1>
@@ -724,14 +748,14 @@
                                     <form onsubmit="handleLogin(event)">
                                         <div class="form-group">
                                             <label class="form-label" for="login-email">WORK EMAIL ADDRESS</label>
-                                            <input type="email" id="login-email" class="form-input" placeholder="user@dayflow.org" required="required" autocomplete="email" />
+                                            <input type="email" id="login-email" class="form-input" placeholder="user@dayflow.org" required="required" autocomplete="email" value="${escapeHtml(state.loginForm.email || '')}" />
                                         </div>
                                         <div class="form-group">
                                             <label class="form-label" for="login-password">PASSWORD</label>
                                             <input type="password" id="login-password" class="form-input" placeholder="••••••••" required="required" autocomplete="current-password" />
                                         </div>
                                         <button type="submit" class="btn-submit" ${state.loading ? 'disabled' : ''}>
-                                            ${state.loading ? '<span class="spinner-block"></span> AUTHENTICATING...' : 'ACCESS SYSTEM'}
+                                             ${state.loading ? '<span class="spinner-block"></span> AUTHENTICATING...' : 'ACCESS SYSTEM'}
                                         </button>
                                     </form>
 
@@ -760,15 +784,15 @@
                                     <form onsubmit="handleSignup(event)">
                                         <div class="form-group">
                                             <label class="form-label" for="signup-empid">CANONICAL EMPLOYEE ID</label>
-                                            <input type="text" id="signup-empid" class="form-input mono" placeholder="e.g. EMP101" required="required" />
+                                            <input type="text" id="signup-empid" class="form-input mono" placeholder="e.g. EMP101" required="required" value="${escapeHtml(state.signupForm.empId || '')}" />
                                         </div>
                                         <div class="form-group">
                                             <label class="form-label" for="signup-name">FULL NAME</label>
-                                            <input type="text" id="signup-name" class="form-input" placeholder="ALICE SMITH" required="required" />
+                                            <input type="text" id="signup-name" class="form-input" placeholder="ALICE SMITH" required="required" value="${escapeHtml(state.signupForm.name || '')}" />
                                         </div>
                                         <div class="form-group">
                                             <label class="form-label" for="signup-email">WORK EMAIL ADDRESS</label>
-                                            <input type="email" id="signup-email" class="form-input" placeholder="alice@dayflow.org" required="required" />
+                                            <input type="email" id="signup-email" class="form-input" placeholder="alice@dayflow.org" required="required" value="${escapeHtml(state.signupForm.email || '')}" />
                                         </div>
                                         <div class="form-group">
                                             <label class="form-label" for="signup-password">PASSWORD</label>
@@ -777,8 +801,8 @@
                                         <div class="form-group">
                                             <label class="form-label" for="signup-role">AUTHORIZATION ROLE</label>
                                             <select id="signup-role" class="form-select">
-                                                <option value="Employee">EMPLOYEE</option>
-                                                <option value="HR/Admin">HR / ADMIN</option>
+                                                <option value="Employee" ${state.signupForm.role === 'Employee' ? 'selected' : ''}>EMPLOYEE</option>
+                                                <option value="HR/Admin" ${state.signupForm.role === 'HR/Admin' ? 'selected' : ''}>HR / ADMIN</option>
                                             </select>
                                         </div>
                                         <button type="submit" class="btn-submit" ${state.loading ? 'disabled' : ''}>
