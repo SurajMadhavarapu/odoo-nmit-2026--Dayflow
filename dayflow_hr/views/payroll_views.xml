@@ -66,24 +66,38 @@
                                    groups="dayflow_hr.group_dayflow_hr_admin"/>
                         </group>
                     </group>
-                    <group string="Earnings">
-                        <field name="basic_salary"
-                               readonly="not context.get('is_hr_admin', False)"/>
-                        <field name="house_rent_allowance"
-                               readonly="not context.get('is_hr_admin', False)"/>
-                        <field name="transport_allowance"
-                               readonly="not context.get('is_hr_admin', False)"/>
-                        <field name="other_allowances"
-                               readonly="not context.get('is_hr_admin', False)"/>
+                    <!-- Earnings: HR Admin editable; employees see read-only -->
+                    <group string="Earnings"
+                           groups="dayflow_hr.group_dayflow_hr_admin">
+                        <field name="basic_salary"/>
+                        <field name="house_rent_allowance"/>
+                        <field name="transport_allowance"/>
+                        <field name="other_allowances"/>
                         <field name="gross_salary" readonly="1"/>
                     </group>
-                    <group string="Deductions">
-                        <field name="provident_fund"
-                               readonly="not context.get('is_hr_admin', False)"/>
-                        <field name="tax_deduction"
-                               readonly="not context.get('is_hr_admin', False)"/>
-                        <field name="other_deductions"
-                               readonly="not context.get('is_hr_admin', False)"/>
+                    <!-- Earnings: read-only view for employees -->
+                    <group string="Earnings"
+                           groups="dayflow_hr.group_dayflow_employee">
+                        <field name="basic_salary" readonly="1"/>
+                        <field name="house_rent_allowance" readonly="1"/>
+                        <field name="transport_allowance" readonly="1"/>
+                        <field name="other_allowances" readonly="1"/>
+                        <field name="gross_salary" readonly="1"/>
+                    </group>
+                    <!-- Deductions: HR Admin editable -->
+                    <group string="Deductions"
+                           groups="dayflow_hr.group_dayflow_hr_admin">
+                        <field name="provident_fund"/>
+                        <field name="tax_deduction"/>
+                        <field name="other_deductions"/>
+                        <field name="total_deductions" readonly="1"/>
+                    </group>
+                    <!-- Deductions: read-only for employees -->
+                    <group string="Deductions"
+                           groups="dayflow_hr.group_dayflow_employee">
+                        <field name="provident_fund" readonly="1"/>
+                        <field name="tax_deduction" readonly="1"/>
+                        <field name="other_deductions" readonly="1"/>
                         <field name="total_deductions" readonly="1"/>
                     </group>
                     <group string="Net">

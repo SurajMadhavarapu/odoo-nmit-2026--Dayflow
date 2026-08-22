@@ -16,15 +16,15 @@
 
             <!-- Stat buttons (HR Admin only) -->
             <xpath expr="//div[@name='button_box']" position="inside">
-                <button type="action"
-                        name="%(dayflow_hr.action_dayflow_attendance)d"
+                <button type="object"
+                        name="action_open_attendance"
                         class="oe_stat_button"
                         icon="fa-calendar-check-o"
                         groups="dayflow_hr.group_dayflow_hr_admin">
                     <field name="df_attendance_count" widget="statinfo" string="Attendance"/>
                 </button>
-                <button type="action"
-                        name="%(dayflow_hr.action_dayflow_leave)d"
+                <button type="object"
+                        name="action_open_leaves"
                         class="oe_stat_button"
                         icon="fa-plane"
                         groups="dayflow_hr.group_dayflow_hr_admin">

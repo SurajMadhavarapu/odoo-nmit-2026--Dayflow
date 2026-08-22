@@ -10,7 +10,7 @@
         <field name="name">dayflow.audit.log.tree</field>
         <field name="model">dayflow.audit.log</field>
         <field name="arch" type="xml">
-            <tree string="Audit Log" create="false" edit="false" delete="false">
+            <list string="Audit Log" create="false" edit="false" delete="false">
                 <field name="timestamp"/>
                 <field name="user_id"/>
                 <field name="model_name"/>
@@ -19,7 +19,7 @@
                 <field name="field_name"/>
                 <field name="old_value"/>
                 <field name="new_value"/>
-            </tree>
+            </list>
         </field>
     </record>
 

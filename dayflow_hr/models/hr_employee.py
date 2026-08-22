@@ -126,6 +126,31 @@ class HrEmployee(models.Model):
             rec.df_leave_count = len(rec.df_leave_ids)
 
     # ------------------------------------------------------------------
+    # Stat button actions
+    # ------------------------------------------------------------------
+    def action_open_attendance(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Attendance',
+            'res_model': 'dayflow.attendance',
+            'view_mode': 'list,form',
+            'domain': [('employee_id', '=', self.id)],
+            'context': {'default_employee_id': self.id},
+        }
+
+    def action_open_leaves(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Leave Requests',
+            'res_model': 'dayflow.leave.request',
+            'view_mode': 'list,form',
+            'domain': [('employee_id', '=', self.id)],
+            'context': {'default_employee_id': self.id},
+        }
+
+    # ------------------------------------------------------------------
     # Validation
     # ------------------------------------------------------------------
     @api.constrains('employee_code')

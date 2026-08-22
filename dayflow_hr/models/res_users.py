@@ -105,14 +105,12 @@ class ResUsers(models.Model):
                 'user_id': new_user.id,
                 'work_email': user_email,
                 'employee_code': emp_code,
-                'barcode': emp_code,
                 'identification_id': emp_code,
             }
             employee = self.env['hr.employee'].sudo().create(emp_vals)
         else:
             employee.sudo().write({
                 'employee_code': emp_code,
-                'barcode': emp_code,
                 'identification_id': emp_code,
                 'work_email': user_email,
             })
