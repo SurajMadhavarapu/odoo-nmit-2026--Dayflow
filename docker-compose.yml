@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: dayflow_postgres
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=odoo
+      - POSTGRES_PASSWORD=odoo
+    volumes:
+      - dayflow_db_data:/var/lib/postgresql/data
+    restart: always
+
+  web:
+    image: odoo:17.0
+    container_name: dayflow_odoo
+    depends_on:
+      - db
+    ports:
+      - "8069:8069"
+    volumes:
+      - ./odoo.conf:/etc/odoo/odoo.conf
+      - ./dayflow_hr:/mnt/extra-addons/dayflow_hr
+    command: odoo -c /etc/odoo/odoo.conf
+    restart: always
+
+volumes:
+  dayflow_db_data:

@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Environment & IDE
+.env
+.venv
+env/
+venv/
+ENV/
+.idea/
+.vscode/
+
+# Database & Volume dumps
+*.dump
+*.sql
+*.tar
+*.gz
+postgres_data/
+
+# OS specific
+.DS_Store
+Thumbs.db
