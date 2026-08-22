@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 """
 Dayflow - Payroll / Salary Structure Model
+Owner: Mani (HR Core)
+
 Hackathon MVP: one payroll record per employee per pay period.
 
-INTEGRATION CONTRACT:
+INTEGRATION CONTRACT (stable — do not rename):
   model  : dayflow.payroll
   fields :
     employee_id          Many2one hr.employee   required
@@ -20,16 +22,20 @@ INTEGRATION CONTRACT:
     total_deductions     Monetary (computed)    sum of deductions
     net_salary           Monetary (computed)    gross - total_deductions
     state                Selection              draft | confirmed | paid
-    notes                Text                   HR internal notes
+    notes                Text                   HR internal
 
-  Actions:
-    action_confirm()     HR: draft → confirmed
-    action_mark_paid()   HR: confirmed → paid
-    action_reset_draft() HR: any → draft
+  Actions (HR Admin only):
+    action_confirm()       draft → confirmed
+    action_mark_paid()     confirmed → paid
+    action_reset_draft()   any → draft
 
   Permissions:
-    Employee : read own record only (enforced at model + ACL level)
+    Employee : read own record only (enforced at ACL + write() level)
     HR Admin : full CRUD
+
+  Security groups used:
+    dayflow_hr.group_dayflow_employee
+    dayflow_hr.group_dayflow_hr_admin
 """
 
 from odoo import api, fields, models, _
@@ -152,10 +158,9 @@ class DayflowPayroll(models.Model):
         compute='_compute_totals',
         store=True,
     )
-
     notes = fields.Text(
         string='Notes',
-        help='Internal HR notes — not visible to employees in the UI',
+        help='Internal HR notes — not shown to employees in the UI',
     )
 
     # ------------------------------------------------------------------
@@ -202,11 +207,11 @@ class DayflowPayroll(models.Model):
                     )
 
     # ------------------------------------------------------------------
-    # Workflow actions
+    # Workflow actions (HR Admin only)
     # ------------------------------------------------------------------
     def action_confirm(self):
         self.ensure_one()
-        if not self.env.user.has_group('dayflow.group_dayflow_hr_admin'):
+        if not self.env.user.has_group('dayflow_hr.group_dayflow_hr_admin'):
             raise UserError(_('Only HR/Admin users can confirm payroll records.'))
         if self.state != 'draft':
             raise UserError(_('Only draft records can be confirmed.'))
@@ -215,7 +220,7 @@ class DayflowPayroll(models.Model):
 
     def action_mark_paid(self):
         self.ensure_one()
-        if not self.env.user.has_group('dayflow.group_dayflow_hr_admin'):
+        if not self.env.user.has_group('dayflow_hr.group_dayflow_hr_admin'):
             raise UserError(_('Only HR/Admin users can mark payroll as paid.'))
         if self.state != 'confirmed':
             raise UserError(_('Only confirmed records can be marked as paid.'))
@@ -224,7 +229,7 @@ class DayflowPayroll(models.Model):
 
     def action_reset_draft(self):
         self.ensure_one()
-        if not self.env.user.has_group('dayflow.group_dayflow_hr_admin'):
+        if not self.env.user.has_group('dayflow_hr.group_dayflow_hr_admin'):
             raise UserError(_('Only HR/Admin users can reset payroll records.'))
         self.write({'state': 'draft'})
 
@@ -232,11 +237,10 @@ class DayflowPayroll(models.Model):
     # Security: employees cannot write payroll
     # ------------------------------------------------------------------
     def write(self, vals):
-        if not self.env.user.has_group('dayflow.group_dayflow_hr_admin') and not self.env.su:
+        if not self.env.user.has_group('dayflow_hr.group_dayflow_hr_admin') and not self.env.su:
             raise UserError(
                 _('Employees cannot modify salary/payroll records. Contact HR.')
             )
-        # Audit all salary field changes
         salary_fields = {
             'basic_salary', 'house_rent_allowance', 'transport_allowance',
             'other_allowances', 'provident_fund', 'tax_deduction', 'other_deductions',
@@ -256,7 +260,7 @@ class DayflowPayroll(models.Model):
         return super().write(vals)
 
     def unlink(self):
-        if not self.env.user.has_group('dayflow.group_dayflow_hr_admin') and not self.env.su:
+        if not self.env.user.has_group('dayflow_hr.group_dayflow_hr_admin') and not self.env.su:
             raise UserError(_('Employees cannot delete payroll records.'))
         return super().unlink()
 
@@ -266,7 +270,7 @@ class DayflowPayroll(models.Model):
             'model_name': self._name,
             'record_id': self.id,
             'record_name': self.display_name,
-            'action': action if action in ('confirm', 'update') else 'update',
+            'action': 'update',
             'field_name': 'state',
             'old_value': '',
             'new_value': self.state,

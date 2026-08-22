@@ -1,27 +1,33 @@
 # -*- coding: utf-8 -*-
 """
 Dayflow - Leave Request Model
+Owner: Mani (HR Core) | UI: Kunam
+
 Full apply → pending → approve/reject workflow.
 
-INTEGRATION CONTRACT:
+INTEGRATION CONTRACT (stable — do not rename):
   model  : dayflow.leave.request
   fields :
     employee_id    Many2one hr.employee   required; defaults to logged-in employee
     leave_type     Selection              paid | sick | unpaid
     date_from      Date                   required
-    date_to        Date                   required; must be >= date_from
+    date_to        Date                   required; >= date_from
     number_of_days Integer (computed)
-    remarks        Text                   employee fills this
+    remarks        Text
     state          Selection              draft | pending | approved | rejected
     hr_comment     Text                   HR/Admin fills on decision
-    approved_by    Many2one res.users     set automatically
-    approved_date  Datetime               set automatically
+    approved_by    Many2one res.users     auto-set
+    approved_date  Datetime               auto-set
 
-  Workflow methods (call via type="object" from views):
+  Workflow (type="object" from form buttons):
     action_submit()          employee: draft → pending
     action_approve()         HR Admin: pending → approved
     action_reject()          HR Admin: pending → rejected
-    action_reset_to_draft()  HR Admin: rejected → draft
+    action_reset_to_draft()  HR Admin: rejected/pending → draft
+
+  Security groups used:
+    dayflow_hr.group_dayflow_employee
+    dayflow_hr.group_dayflow_hr_admin
 """
 
 from datetime import timedelta
@@ -74,7 +80,7 @@ class DayflowLeaveRequest(models.Model):
     )
     remarks = fields.Text(
         string='Remarks',
-        help='Reason for leave (written by employee)',
+        help='Reason for leave — filled by employee',
     )
 
     # ------------------------------------------------------------------
@@ -113,7 +119,7 @@ class DayflowLeaveRequest(models.Model):
     )
 
     # ------------------------------------------------------------------
-    # Default: populate with current user's employee record
+    # Default: populate with current user's linked employee record
     # ------------------------------------------------------------------
     def _default_employee(self):
         emp = self.env['hr.employee'].search(
@@ -170,8 +176,7 @@ class DayflowLeaveRequest(models.Model):
         self.ensure_one()
         if self.state != 'draft':
             raise UserError(_('Only draft requests can be submitted.'))
-        # Employees can only submit their own leave
-        if not self.env.user.has_group('dayflow.group_dayflow_hr_admin'):
+        if not self.env.user.has_group('dayflow_hr.group_dayflow_hr_admin'):
             emp = self.env['hr.employee'].search(
                 [('user_id', '=', self.env.uid)], limit=1
             )
@@ -184,7 +189,7 @@ class DayflowLeaveRequest(models.Model):
     def action_approve(self):
         """HR Admin approves: pending → approved."""
         self.ensure_one()
-        if not self.env.user.has_group('dayflow.group_dayflow_hr_admin'):
+        if not self.env.user.has_group('dayflow_hr.group_dayflow_hr_admin'):
             raise UserError(_('Only HR/Admin users can approve leave requests.'))
         if self.state != 'pending':
             raise UserError(_('Only pending requests can be approved.'))
@@ -200,7 +205,7 @@ class DayflowLeaveRequest(models.Model):
     def action_reject(self):
         """HR Admin rejects: pending → rejected."""
         self.ensure_one()
-        if not self.env.user.has_group('dayflow.group_dayflow_hr_admin'):
+        if not self.env.user.has_group('dayflow_hr.group_dayflow_hr_admin'):
             raise UserError(_('Only HR/Admin users can reject leave requests.'))
         if self.state != 'pending':
             raise UserError(_('Only pending requests can be rejected.'))
@@ -213,7 +218,7 @@ class DayflowLeaveRequest(models.Model):
         self._audit('reject')
 
     def action_reset_to_draft(self):
-        """Allow resetting rejected/pending back to draft."""
+        """Allow HR to reset rejected/pending back to draft."""
         self.ensure_one()
         if self.state not in ('rejected', 'pending'):
             raise UserError(_('Only rejected or pending requests can be reset.'))
@@ -226,13 +231,9 @@ class DayflowLeaveRequest(models.Model):
 
     # ------------------------------------------------------------------
     # Internal: sync attendance on approval
+    # Kunam may override _sync_attendance_for_leave() without touching this file
     # ------------------------------------------------------------------
     def _sync_attendance_for_leave(self):
-        """
-        When a leave is approved, mark each working day in the date range
-        as status='leave' in dayflow.attendance (creating rows if missing).
-        Integration point: Kunam may extend or override this.
-        """
         if not (self.date_from and self.date_to):
             return
         current = self.date_from
@@ -253,7 +254,7 @@ class DayflowLeaveRequest(models.Model):
             current += timedelta(days=1)
 
     # ------------------------------------------------------------------
-    # Internal: write audit log entry
+    # Internal: audit log
     # ------------------------------------------------------------------
     def _audit(self, action):
         self.env['dayflow.audit.log'].sudo().create({
@@ -268,10 +269,10 @@ class DayflowLeaveRequest(models.Model):
         })
 
     # ------------------------------------------------------------------
-    # Security: block non-HR users from writing HR-only fields directly
+    # Security: block employees from writing HR-only fields directly
     # ------------------------------------------------------------------
     def write(self, vals):
-        is_hr = self.env.user.has_group('dayflow.group_dayflow_hr_admin')
+        is_hr = self.env.user.has_group('dayflow_hr.group_dayflow_hr_admin')
         if not is_hr and not self.env.su:
             blocked = {'hr_comment', 'approved_by', 'approved_date'} & set(vals.keys())
             if blocked:
@@ -279,7 +280,6 @@ class DayflowLeaveRequest(models.Model):
                     _('You are not authorised to modify HR-only fields: %s')
                     % ', '.join(blocked)
                 )
-            # Block direct state writes from employees — they must use action_submit()
             if 'state' in vals and vals['state'] != 'pending':
                 raise UserError(
                     _('Use the Submit button to change leave request status.')

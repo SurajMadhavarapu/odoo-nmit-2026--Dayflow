@@ -1,23 +1,29 @@
 # -*- coding: utf-8 -*-
 """
 Dayflow - Attendance Model
+Owner: Mani (HR Core)
+
 One record per employee per calendar day.
 
-INTEGRATION CONTRACT:
+INTEGRATION CONTRACT (stable — do not rename):
   model  : dayflow.attendance
   fields :
     employee_id   Many2one hr.employee   required
-    date          Date                   required, unique per employee
+    date          Date                   required; unique per employee (SQL constraint)
     check_in      Datetime               optional
-    check_out     Datetime               optional; must be > check_in
-    worked_hours  Float (computed)       hours between check_in and check_out
+    check_out     Datetime               optional; must be strictly after check_in
+    worked_hours  Float (computed+stored) hours between check_in and check_out
     status        Selection              present | absent | half_day | leave
     notes         Text                   optional
 
-  Button actions (call via type="object" in views):
-    action_check_in()   — sets check_in, status=present
-    action_check_out()  — sets check_out, refines status
-    get_or_create_today(employee_id) — @api.model helper for Kunam's UI
+  Actions (type="object" in views):
+    action_check_in()               sets check_in, status → present
+    action_check_out()              sets check_out, refines status to half_day if < 7 h
+    get_or_create_today(emp_id)     @api.model helper for Kunam's UI
+
+  Security groups used:
+    dayflow_hr.group_dayflow_employee
+    dayflow_hr.group_dayflow_hr_admin
 """
 
 from odoo import api, fields, models, _
@@ -133,7 +139,7 @@ class DayflowAttendance(models.Model):
     def _assert_own_or_hr(self):
         if self.env.su:
             return
-        if self.env.user.has_group('dayflow.group_dayflow_hr_admin'):
+        if self.env.user.has_group('dayflow_hr.group_dayflow_hr_admin'):
             return
         for rec in self:
             if rec.employee_id.user_id.id != self.env.uid:
@@ -172,7 +178,8 @@ class DayflowAttendance(models.Model):
         self.status = 'present' if hours >= 7 else 'half_day'
 
     # ------------------------------------------------------------------
-    # Utility: get or create today's record for an employee (for Kunam)
+    # Utility: get or create today's record for an employee
+    # Used by Kunam's UI integration
     # ------------------------------------------------------------------
     @api.model
     def get_or_create_today(self, employee_id):

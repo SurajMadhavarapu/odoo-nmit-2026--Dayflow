@@ -1,8 +1,0 @@
-id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_dayflow_attendance_employee,dayflow.attendance.employee,dayflow.model_dayflow_attendance,dayflow.group_dayflow_employee,1,1,1,0
-access_dayflow_attendance_hr_admin,dayflow.attendance.hr_admin,dayflow.model_dayflow_attendance,dayflow.group_dayflow_hr_admin,1,1,1,1
-access_dayflow_leave_employee,dayflow.leave.request.employee,dayflow.model_dayflow_leave_request,dayflow.group_dayflow_employee,1,1,1,0
-access_dayflow_leave_hr_admin,dayflow.leave.request.hr_admin,dayflow.model_dayflow_leave_request,dayflow.group_dayflow_hr_admin,1,1,1,1
-access_dayflow_payroll_employee,dayflow.payroll.employee,dayflow.model_dayflow_payroll,dayflow.group_dayflow_employee,1,0,0,0
-access_dayflow_payroll_hr_admin,dayflow.payroll.hr_admin,dayflow.model_dayflow_payroll,dayflow.group_dayflow_hr_admin,1,1,1,1
-access_dayflow_audit_log_hr_admin,dayflow.audit.log.hr_admin,dayflow.model_dayflow_audit_log,dayflow.group_dayflow_hr_admin,1,0,0,0

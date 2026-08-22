@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Dayflow Attendance Views
+    Owner: Mani (model/backend) | Kunam extends this for workflow UI
+    Provides minimal list + form + search + actions.
+    Kunam: add your UI extensions here or in a separate inherited view file.
+-->
+<odoo>
+
+    <!-- ── List view ── -->
+    <record id="view_dayflow_attendance_tree" model="ir.ui.view">
+        <field name="name">dayflow.attendance.tree</field>
+        <field name="model">dayflow.attendance</field>
+        <field name="arch" type="xml">
+            <tree string="Attendance" decoration-success="status=='present'"
+                  decoration-warning="status=='half_day'"
+                  decoration-danger="status=='absent'"
+                  decoration-info="status=='leave'">
+                <field name="employee_id"/>
+                <field name="date"/>
+                <field name="check_in"/>
+                <field name="check_out"/>
+                <field name="worked_hours" widget="float_time"/>
+                <field name="status"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- ── Form view ── -->
+    <record id="view_dayflow_attendance_form" model="ir.ui.view">
+        <field name="name">dayflow.attendance.form</field>
+        <field name="model">dayflow.attendance</field>
+        <field name="arch" type="xml">
+            <form string="Attendance Record">
+                <header>
+                    <button name="action_check_in"
+                            string="Check In"
+                            type="object"
+                            class="btn-primary"
+                            attrs="{'invisible': [('check_in', '!=', False)]}"/>
+                    <button name="action_check_out"
+                            string="Check Out"
+                            type="object"
+                            class="btn-secondary"
+                            attrs="{'invisible': ['|', ('check_in', '=', False), ('check_out', '!=', False)]}"/>
+                    <field name="status" widget="statusbar"
+                           statusbar_visible="absent,present,half_day,leave"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group string="Who / When">
+                            <field name="employee_id"
+                                   attrs="{'readonly': [('id', '!=', False)]}"
+                                   groups="dayflow_hr.group_dayflow_hr_admin"/>
+                            <field name="date"/>
+                        </group>
+                        <group string="Times">
+                            <field name="check_in"/>
+                            <field name="check_out"/>
+                            <field name="worked_hours" widget="float_time"/>
+                        </group>
+                    </group>
+                    <group string="Notes">
+                        <field name="notes" nolabel="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ── Search view ── -->
+    <record id="view_dayflow_attendance_search" model="ir.ui.view">
+        <field name="name">dayflow.attendance.search</field>
+        <field name="model">dayflow.attendance</field>
+        <field name="arch" type="xml">
+            <search string="Search Attendance">
+                <field name="employee_id"/>
+                <field name="date"/>
+                <filter string="Today"   name="today"   domain="[('date','=', context_today().strftime('%Y-%m-%d'))]"/>
+                <filter string="Present" name="present" domain="[('status','=','present')]"/>
+                <filter string="Absent"  name="absent"  domain="[('status','=','absent')]"/>
+                <filter string="Half Day" name="halfday" domain="[('status','=','half_day')]"/>
+                <filter string="Leave"   name="on_leave" domain="[('status','=','leave')]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Employee"  name="grp_employee" context="{'group_by': 'employee_id'}"/>
+                    <filter string="Status"    name="grp_status"   context="{'group_by': 'status'}"/>
+                    <filter string="Date"      name="grp_date"     context="{'group_by': 'date:week'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ── Window action ── -->
+    <record id="action_dayflow_attendance" model="ir.actions.act_window">
+        <field name="name">Attendance</field>
+        <field name="res_model">dayflow.attendance</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_dayflow_attendance_search"/>
+        <field name="context">{'search_default_today': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No attendance records yet.
+            </p>
+        </field>
+    </record>
+
+</odoo>

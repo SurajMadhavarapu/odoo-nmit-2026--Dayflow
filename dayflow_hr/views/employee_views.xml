@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Dayflow Employee Views
+    Owner: Mani (HR Core)
+    Extends hr.employee form/list/search.
+    Harshith: consume df_attendance_count / df_leave_count stat buttons.
+-->
+<odoo>
+
+    <!-- ── Extend hr.employee form: add Dayflow tab ── -->
+    <record id="view_employee_form_dayflow" model="ir.ui.view">
+        <field name="name">hr.employee.form.dayflow</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Stat buttons: attendance + leave counts -->
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="%(dayflow_hr.action_dayflow_attendance)d"
+                        type="action"
+                        class="oe_stat_button"
+                        icon="fa-calendar-check-o"
+                        groups="dayflow_hr.group_dayflow_hr_admin">
+                    <field name="df_attendance_count" widget="statinfo" string="Attendance"/>
+                </button>
+                <button name="%(dayflow_hr.action_dayflow_leave)d"
+                        type="action"
+                        class="oe_stat_button"
+                        icon="fa-plane"
+                        groups="dayflow_hr.group_dayflow_hr_admin">
+                    <field name="df_leave_count" widget="statinfo" string="Leaves"/>
+                </button>
+            </xpath>
+
+            <!-- Employee ID field after name -->
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="employee_code"
+                       attrs="{'readonly': [('id', '!=', False)]}"
+                       groups="dayflow_hr.group_dayflow_hr_admin"/>
+            </xpath>
+
+            <!-- New Dayflow tab -->
+            <xpath expr="//page[@name='private_information']" position="after">
+                <page string="Dayflow HR" name="dayflow_hr_tab">
+                    <group string="Employment">
+                        <field name="df_employment_type"
+                               attrs="{'readonly': [('user_id', '=', uid)]}"
+                               groups="dayflow_hr.group_dayflow_hr_admin"/>
+                        <field name="df_joining_date"
+                               groups="dayflow_hr.group_dayflow_hr_admin"/>
+                        <field name="df_role"
+                               groups="dayflow_hr.group_dayflow_hr_admin"/>
+                        <field name="df_active"
+                               groups="dayflow_hr.group_dayflow_hr_admin"/>
+                    </group>
+                    <group string="Personal (Self-Service)">
+                        <field name="df_phone"/>
+                        <field name="df_address"/>
+                        <field name="df_emergency_contact"/>
+                        <field name="df_emergency_phone"/>
+                    </group>
+                    <group string="Confidential" groups="dayflow_hr.group_dayflow_hr_admin">
+                        <field name="df_date_of_birth"/>
+                        <field name="df_gender"/>
+                    </group>
+                    <group string="Payroll">
+                        <field name="df_payroll_ids" readonly="1">
+                            <tree string="Payroll Records">
+                                <field name="pay_period"/>
+                                <field name="gross_salary"/>
+                                <field name="net_salary"/>
+                                <field name="state"/>
+                            </tree>
+                        </field>
+                    </group>
+                </page>
+            </xpath>
+
+        </field>
+    </record>
+
+    <!-- ── hr.employee list: add employee_code column ── -->
+    <record id="view_employee_tree_dayflow" model="ir.ui.view">
+        <field name="name">hr.employee.tree.dayflow</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="employee_code" optional="show"
+                       groups="dayflow_hr.group_dayflow_hr_admin"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- ── hr.employee search: add employee_code filter ── -->
+    <record id="view_employee_filter_dayflow" model="ir.ui.view">
+        <field name="name">hr.employee.search.dayflow</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_filter"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="employee_code"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

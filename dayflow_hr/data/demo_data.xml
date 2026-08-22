@@ -1,15 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
     Dayflow Demo Data
-    Provides the minimum dataset to demonstrate the complete workflow.
+    Owner: Mani
 
-    Demo credentials (all users): Dayflow@123
+    Demonstrates the full workflow:
+      Employee sign-in → view profile → apply leave → HR approves/rejects
+      HR views attendance → confirms payroll
 
-    Users:
-      priya.sharma@dayflow.demo  — HR Admin
-      ravi.kumar@dayflow.demo    — Employee
-      anita.reddy@dayflow.demo   — Employee
-      kiran.patel@dayflow.demo   — Employee
+    Demo credentials (password: Dayflow@123)
+      priya.sharma@dayflow.demo  — HR Admin   (DF-001)
+      ravi.kumar@dayflow.demo    — Employee   (DF-002)
+      anita.reddy@dayflow.demo   — Employee   (DF-003)
+      kiran.patel@dayflow.demo   — Employee   (DF-004)
+
+    ⚠ Do NOT use these credentials in production.
+    ⚠ Do NOT conflict with Suraj's test accounts (suraj.* logins).
 -->
 <odoo>
     <data noupdate="1">
@@ -24,7 +29,7 @@
             <field name="password">Dayflow@123</field>
             <field name="groups_id" eval="[
                 (4, ref('base.group_user')),
-                (4, ref('dayflow.group_dayflow_hr_admin'))
+                (4, ref('dayflow_hr.group_dayflow_hr_admin'))
             ]"/>
         </record>
 
@@ -34,7 +39,7 @@
             <field name="password">Dayflow@123</field>
             <field name="groups_id" eval="[
                 (4, ref('base.group_user')),
-                (4, ref('dayflow.group_dayflow_employee'))
+                (4, ref('dayflow_hr.group_dayflow_employee'))
             ]"/>
         </record>
 
@@ -44,7 +49,7 @@
             <field name="password">Dayflow@123</field>
             <field name="groups_id" eval="[
                 (4, ref('base.group_user')),
-                (4, ref('dayflow.group_dayflow_employee'))
+                (4, ref('dayflow_hr.group_dayflow_employee'))
             ]"/>
         </record>
 
@@ -54,18 +59,18 @@
             <field name="password">Dayflow@123</field>
             <field name="groups_id" eval="[
                 (4, ref('base.group_user')),
-                (4, ref('dayflow.group_dayflow_employee'))
+                (4, ref('dayflow_hr.group_dayflow_employee'))
             ]"/>
         </record>
 
         <!-- ============================================================
              DEMO hr.employee RECORDS
-             All Dayflow custom fields use the canonical df_ prefix.
+             employee_code = canonical Dayflow Employee ID
         ============================================================ -->
 
         <record id="emp_priya" model="hr.employee">
             <field name="name">Priya Sharma</field>
-            <field name="df_employee_id">DF-001</field>
+            <field name="employee_code">DF-001</field>
             <field name="work_email">priya.sharma@dayflow.demo</field>
             <field name="job_title">HR Manager</field>
             <field name="df_phone">+91 98765 00001</field>
@@ -78,7 +83,7 @@
 
         <record id="emp_ravi" model="hr.employee">
             <field name="name">Ravi Kumar</field>
-            <field name="df_employee_id">DF-002</field>
+            <field name="employee_code">DF-002</field>
             <field name="work_email">ravi.kumar@dayflow.demo</field>
             <field name="job_title">Software Engineer</field>
             <field name="df_phone">+91 98765 00002</field>
@@ -91,7 +96,7 @@
 
         <record id="emp_anita" model="hr.employee">
             <field name="name">Anita Reddy</field>
-            <field name="df_employee_id">DF-003</field>
+            <field name="employee_code">DF-003</field>
             <field name="work_email">anita.reddy@dayflow.demo</field>
             <field name="job_title">QA Engineer</field>
             <field name="df_phone">+91 98765 00003</field>
@@ -104,7 +109,7 @@
 
         <record id="emp_kiran" model="hr.employee">
             <field name="name">Kiran Patel</field>
-            <field name="df_employee_id">DF-004</field>
+            <field name="employee_code">DF-004</field>
             <field name="work_email">kiran.patel@dayflow.demo</field>
             <field name="job_title">UI Designer</field>
             <field name="df_phone">+91 98765 00004</field>
@@ -116,8 +121,7 @@
         </record>
 
         <!-- ============================================================
-             DEMO ATTENDANCE
-             Covers: Present, Half-day, Leave, Absent
+             DEMO ATTENDANCE — covers Present, Half-day, Leave, Absent
         ============================================================ -->
 
         <record id="att_ravi_20_present" model="dayflow.attendance">
@@ -156,18 +160,19 @@
             <field name="status">leave</field>
         </record>
 
-        <record id="att_kiran_19_absent" model="dayflow.attendance">
+        <record id="att_kiran_21_leave" model="dayflow.attendance">
             <field name="employee_id" ref="emp_kiran"/>
-            <field name="date">2026-08-19</field>
-            <field name="status">absent</field>
+            <field name="date">2026-08-21</field>
+            <field name="status">leave</field>
         </record>
 
         <!-- ============================================================
              DEMO LEAVE REQUESTS
-             Covers: approved (Kiran, sick), draft/pending (Ravi, paid), rejected (Anita, unpaid)
+             Kiran: approved sick leave
+             Ravi:  draft paid leave (submit + HR approves live in demo)
+             Anita: rejected unpaid leave
         ============================================================ -->
 
-        <!-- Kiran: Sick leave — APPROVED -->
         <record id="leave_kiran_sick_approved" model="dayflow.leave.request">
             <field name="employee_id" ref="emp_kiran"/>
             <field name="leave_type">sick</field>
@@ -180,7 +185,6 @@
             <field name="hr_comment">Approved. Please submit a medical certificate on return.</field>
         </record>
 
-        <!-- Ravi: Paid leave — DRAFT (to be submitted by employee in demo) -->
         <record id="leave_ravi_paid_draft" model="dayflow.leave.request">
             <field name="employee_id" ref="emp_ravi"/>
             <field name="leave_type">paid</field>
@@ -190,7 +194,6 @@
             <field name="state">draft</field>
         </record>
 
-        <!-- Anita: Unpaid leave — REJECTED -->
         <record id="leave_anita_unpaid_rejected" model="dayflow.leave.request">
             <field name="employee_id" ref="emp_anita"/>
             <field name="leave_type">unpaid</field>
@@ -204,8 +207,8 @@
         </record>
 
         <!-- ============================================================
-             DEMO PAYROLL
-             One record per employee for August 2026.
+             DEMO PAYROLL — August 2026
+             Ravi + Anita: confirmed   |   Kiran: draft (confirm live in demo)
         ============================================================ -->
 
         <record id="payroll_ravi" model="dayflow.payroll">
@@ -219,7 +222,7 @@
             <field name="tax_deduction">7000.00</field>
             <field name="other_deductions">0.00</field>
             <field name="state">confirmed</field>
-            <field name="notes">August 2026 salary — confirmed by HR.</field>
+            <field name="notes">August 2026 salary confirmed by HR.</field>
         </record>
 
         <record id="payroll_anita" model="dayflow.payroll">
@@ -233,7 +236,7 @@
             <field name="tax_deduction">6000.00</field>
             <field name="other_deductions">0.00</field>
             <field name="state">confirmed</field>
-            <field name="notes">August 2026 salary — confirmed by HR.</field>
+            <field name="notes">August 2026 salary confirmed by HR.</field>
         </record>
 
         <record id="payroll_kiran" model="dayflow.payroll">
@@ -247,7 +250,7 @@
             <field name="tax_deduction">5500.00</field>
             <field name="other_deductions">0.00</field>
             <field name="state">draft</field>
-            <field name="notes">August 2026 — pending confirmation.</field>
+            <field name="notes">August 2026 — pending HR confirmation (demo live).</field>
         </record>
 
     </data>
