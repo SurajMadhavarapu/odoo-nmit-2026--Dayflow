@@ -5,47 +5,50 @@
         <head>
             <meta charset="UTF-8"/>
             <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-            <title>Dayflow HRMS — Next-Gen Human Resource Management</title>
+            <title>DAYFLOW HRMS — Operational Control Center</title>
             <link rel="preconnect" href="https://fonts.googleapis.com"/>
             <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="crossorigin"/>
-            <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+            <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@600;800&amp;family=Space+Grotesk:wght@600;700;800&amp;family=Inter:wght@400;600;700;800;900&amp;display=swap" rel="stylesheet"/>
             <style>
                 :root {
-                    --bg-dark: #090d16;
-                    --card-bg: rgba(22, 30, 46, 0.75);
-                    --card-border: rgba(255, 255, 255, 0.08);
-                    --input-bg: rgba(13, 18, 30, 0.8);
-                    --input-border: rgba(255, 255, 255, 0.12);
-                    --input-focus: #6366f1;
-                    --primary-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-                    --primary-hover: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-                    --text-main: #f8fafc;
-                    --text-muted: #94a3b8;
-                    --accent-emerald: #10b981;
-                    --accent-amber: #f59e0b;
-                    --accent-rose: #f43f5e;
+                    --bg-canvas: #f4f4ee;
+                    --bg-card: #ffffff;
+                    --border-thick: #000000;
+                    --shadow-hard: 5px 5px 0px #000000;
+                    --shadow-large: 8px 8px 0px #000000;
+                    --accent-yellow: #ffde00;
+                    --accent-green: #00e676;
+                    --accent-rose: #ff4757;
+                    --accent-purple: #a855f7;
+                    --accent-blue: #2979ff;
+                    --text-black: #000000;
+                    --text-muted: #4b5563;
                 }
 
                 * {
                     box-sizing: border-box;
                     margin: 0;
                     padding: 0;
-                    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+                    font-family: 'Space Grotesk', 'Inter', system-ui, -apple-system, sans-serif;
                 }
 
                 body {
-                    background-color: var(--bg-dark);
-                    color: var(--text-main);
+                    background-color: var(--bg-canvas);
+                    color: var(--text-black);
                     min-height: 100vh;
                     display: flex;
                     flex-direction: column;
                     background-image: 
-                        radial-gradient(circle at 15% 20%, rgba(99, 102, 241, 0.15) 0%, transparent 40%),
-                        radial-gradient(circle at 85% 80%, rgba(139, 92, 246, 0.12) 0%, transparent 40%);
-                    background-attachment: fixed;
+                        linear-gradient(to right, rgba(0,0,0,0.06) 1px, transparent 1px),
+                        linear-gradient(to bottom, rgba(0,0,0,0.06) 1px, transparent 1px);
+                    background-size: 24px 24px;
                 }
 
-                /* Layout Container */
+                .mono {
+                    font-family: 'JetBrains Mono', monospace;
+                }
+
+                /* Layout Root */
                 #app-root {
                     width: 100%;
                     min-height: 100vh;
@@ -53,45 +56,50 @@
                     flex-direction: column;
                 }
 
-                /* Header / Navbar */
+                /* Navbar Header */
                 .navbar {
-                    height: 72px;
-                    border-bottom: 1px solid var(--card-border);
-                    background: rgba(15, 23, 42, 0.7);
-                    backdrop-filter: blur(12px);
+                    height: 76px;
+                    border-bottom: 4px solid var(--border-thick);
+                    background: var(--bg-card);
                     display: flex;
                     align-items: center;
                     justify-content: space-between;
                     padding: 0 2rem;
                     position: sticky;
                     top: 0;
-                    z-index: 50;
+                    z-index: 100;
                 }
 
                 .brand-logo {
                     display: flex;
                     align-items: center;
                     gap: 0.75rem;
-                    font-weight: 800;
-                    font-size: 1.25rem;
-                    letter-spacing: -0.02em;
-                    background: var(--primary-gradient);
-                    -webkit-background-clip: text;
-                    -webkit-text-fill-color: transparent;
+                    font-weight: 900;
+                    font-size: 1.5rem;
+                    letter-spacing: -0.03em;
+                    text-transform: uppercase;
+                    color: var(--text-black);
                 }
 
-                .brand-icon {
-                    width: 36px;
-                    height: 36px;
-                    background: var(--primary-gradient);
-                    border-radius: 10px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    color: #fff;
+                .brand-badge {
+                    background: var(--accent-yellow);
+                    border: 3px solid var(--border-thick);
+                    padding: 0.2rem 0.6rem;
+                    font-size: 0.85rem;
                     font-weight: 800;
-                    font-size: 1.1rem;
-                    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+                    box-shadow: 2px 2px 0px #000;
+                }
+
+                .tagline-text {
+                    font-size: 0.8rem;
+                    font-weight: 700;
+                    text-transform: uppercase;
+                    letter-spacing: 0.05em;
+                    color: var(--text-muted);
+                    display: none;
+                }
+                @media (min-width: 768px) {
+                    .tagline-text { display: inline-block; }
                 }
 
                 .user-nav-profile {
@@ -100,265 +108,345 @@
                     gap: 1rem;
                 }
 
-                .badge {
-                    padding: 0.25rem 0.75rem;
-                    border-radius: 9999px;
-                    font-size: 0.75rem;
-                    font-weight: 600;
+                .badge-role {
+                    padding: 0.35rem 0.85rem;
+                    border: 3px solid var(--border-thick);
+                    font-size: 0.8rem;
+                    font-weight: 800;
                     text-transform: uppercase;
                     letter-spacing: 0.05em;
+                    box-shadow: 3px 3px 0px #000;
                 }
 
                 .badge-employee {
-                    background: rgba(16, 185, 129, 0.15);
-                    color: var(--accent-emerald);
-                    border: 1px solid rgba(16, 185, 129, 0.3);
+                    background: var(--accent-green);
+                    color: #000;
                 }
 
                 .badge-admin {
-                    background: rgba(139, 92, 246, 0.15);
-                    color: #a78bfa;
-                    border: 1px solid rgba(139, 92, 246, 0.3);
+                    background: var(--accent-purple);
+                    color: #fff;
+                }
+
+                .btn-brutal {
+                    background: var(--bg-card);
+                    color: var(--text-black);
+                    border: 3px solid var(--border-thick);
+                    padding: 0.6rem 1.2rem;
+                    font-size: 0.9rem;
+                    font-weight: 800;
+                    text-transform: uppercase;
+                    cursor: pointer;
+                    box-shadow: 3px 3px 0px #000;
+                    transition: all 0.1s ease;
+                }
+
+                .btn-brutal:hover:not(:disabled) {
+                    transform: translate(-2px, -2px);
+                    box-shadow: 5px 5px 0px #000;
+                }
+
+                .btn-brutal:active:not(:disabled) {
+                    transform: translate(2px, 2px);
+                    box-shadow: 1px 1px 0px #000;
                 }
 
                 .btn-logout {
-                    background: rgba(244, 63, 94, 0.1);
-                    color: var(--accent-rose);
-                    border: 1px solid rgba(244, 63, 94, 0.25);
-                    padding: 0.5rem 1rem;
-                    border-radius: 8px;
-                    font-size: 0.875rem;
-                    font-weight: 500;
-                    cursor: pointer;
-                    transition: all 0.2s ease;
+                    background: var(--accent-rose);
+                    color: #fff;
                 }
 
-                .btn-logout:hover {
-                    background: rgba(244, 63, 94, 0.2);
-                    border-color: var(--accent-rose);
-                }
-
-                /* Auth Container Cards */
+                /* Auth Container Layout */
                 .auth-wrapper {
                     flex: 1;
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    padding: 2rem 1rem;
+                    padding: 2.5rem 1rem;
                 }
 
                 .auth-card {
                     width: 100%;
-                    max-width: 440px;
-                    background: var(--card-bg);
-                    border: 1px solid var(--card-border);
-                    backdrop-filter: blur(16px);
-                    border-radius: 20px;
+                    max-width: 480px;
+                    background: var(--bg-card);
+                    border: 4px solid var(--border-thick);
                     padding: 2.5rem;
-                    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-                    animation: fadeIn 0.3s ease-out;
+                    box-shadow: var(--shadow-large);
+                    animation: slideUp 0.2s cubic-bezier(0, 0, 0.2, 1);
                 }
 
-                @keyframes fadeIn {
-                    from { opacity: 0; transform: translateY(12px); }
+                @keyframes slideUp {
+                    from { opacity: 0; transform: translateY(16px); }
                     to { opacity: 1; transform: translateY(0); }
                 }
 
+                .auth-header {
+                    margin-bottom: 2rem;
+                    border-bottom: 3px solid var(--border-thick);
+                    padding-bottom: 1.25rem;
+                }
+
                 .auth-title {
-                    font-size: 1.75rem;
-                    font-weight: 700;
+                    font-size: 2rem;
+                    font-weight: 900;
+                    text-transform: uppercase;
+                    letter-spacing: -0.03em;
+                    line-height: 1;
                     margin-bottom: 0.5rem;
-                    letter-spacing: -0.02em;
                 }
 
                 .auth-subtitle {
                     color: var(--text-muted);
                     font-size: 0.9rem;
-                    margin-bottom: 2rem;
+                    font-weight: 600;
                 }
 
                 .form-group {
-                    margin-bottom: 1.25rem;
+                    margin-bottom: 1.5rem;
                 }
 
                 .form-label {
                     display: block;
                     font-size: 0.85rem;
-                    font-weight: 500;
-                    color: var(--text-muted);
+                    font-weight: 800;
+                    text-transform: uppercase;
+                    letter-spacing: 0.05em;
                     margin-bottom: 0.5rem;
                 }
 
                 .form-input, .form-select {
                     width: 100%;
-                    padding: 0.75rem 1rem;
-                    background: var(--input-bg);
-                    border: 1px solid var(--input-border);
-                    border-radius: 10px;
-                    color: var(--text-main);
-                    font-size: 0.95rem;
+                    padding: 0.85rem 1rem;
+                    background: #ffffff;
+                    border: 3px solid var(--border-thick);
+                    border-radius: 0px;
+                    color: var(--text-black);
+                    font-size: 1rem;
+                    font-weight: 700;
+                    box-shadow: 3px 3px 0px #000;
                     outline: none;
-                    transition: all 0.2s ease;
+                    transition: all 0.1s ease;
                 }
 
                 .form-input:focus, .form-select:focus {
-                    border-color: var(--input-focus);
-                    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+                    background: #fffdf0;
+                    transform: translate(-1px, -1px);
+                    box-shadow: 5px 5px 0px #000;
                 }
 
-                .btn-primary {
+                .btn-submit {
                     width: 100%;
-                    padding: 0.875rem;
-                    background: var(--primary-gradient);
-                    border: none;
-                    border-radius: 10px;
-                    color: #fff;
-                    font-size: 1rem;
-                    font-weight: 600;
+                    padding: 1rem;
+                    background: var(--accent-yellow);
+                    color: #000;
+                    border: 4px solid var(--border-thick);
+                    font-size: 1.1rem;
+                    font-weight: 900;
+                    text-transform: uppercase;
+                    letter-spacing: 0.05em;
                     cursor: pointer;
-                    transition: all 0.2s ease;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    gap: 0.5rem;
-                    box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+                    box-shadow: var(--shadow-hard);
+                    transition: all 0.1s ease;
                     margin-top: 0.5rem;
                 }
 
-                .btn-primary:hover:not(:disabled) {
-                    background: var(--primary-hover);
-                    transform: translateY(-1px);
-                    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.45);
+                .btn-submit:hover:not(:disabled) {
+                    transform: translate(-2px, -2px);
+                    box-shadow: 7px 7px 0px #000;
                 }
 
-                .btn-primary:disabled {
-                    opacity: 0.6;
-                    cursor: not-allowed;
+                .btn-submit:active:not(:disabled) {
+                    transform: translate(2px, 2px);
+                    box-shadow: 2px 2px 0px #000;
+                }
+
+                .btn-action-big {
+                    padding: 1.25rem 2rem;
+                    background: var(--accent-yellow);
+                    border: 4px solid #000;
+                    font-size: 1.25rem;
+                    font-weight: 900;
+                    text-transform: uppercase;
+                    box-shadow: 6px 6px 0px #000;
+                    cursor: pointer;
+                    transition: all 0.1s ease;
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 0.75rem;
+                }
+
+                .btn-action-big:hover {
+                    transform: translate(-3px, -3px);
+                    box-shadow: 9px 9px 0px #000;
+                    background: #ffe600;
+                }
+
+                .btn-action-big:active {
+                    transform: translate(2px, 2px);
+                    box-shadow: 2px 2px 0px #000;
                 }
 
                 .alert {
-                    padding: 0.75rem 1rem;
-                    border-radius: 8px;
-                    font-size: 0.875rem;
-                    margin-bottom: 1.25rem;
-                    display: flex;
-                    align-items: center;
-                    gap: 0.5rem;
+                    padding: 1rem;
+                    border: 3px solid var(--border-thick);
+                    font-weight: 800;
+                    font-size: 0.9rem;
+                    margin-bottom: 1.5rem;
+                    box-shadow: 3px 3px 0px #000;
                 }
 
                 .alert-error {
-                    background: rgba(244, 63, 94, 0.15);
-                    border: 1px solid rgba(244, 63, 94, 0.3);
-                    color: #fca5a5;
+                    background: var(--accent-rose);
+                    color: #fff;
                 }
 
                 .alert-success {
-                    background: rgba(16, 185, 129, 0.15);
-                    border: 1px solid rgba(16, 185, 129, 0.3);
-                    color: #6ee7b7;
+                    background: var(--accent-green);
+                    color: #000;
                 }
 
                 .auth-footer {
-                    margin-top: 1.5rem;
+                    margin-top: 1.75rem;
+                    padding-top: 1.25rem;
+                    border-top: 3px solid var(--border-thick);
                     text-align: center;
-                    font-size: 0.875rem;
-                    color: var(--text-muted);
+                    font-size: 0.9rem;
+                    font-weight: 700;
                 }
 
                 .auth-link {
-                    color: #818cf8;
-                    text-decoration: none;
-                    font-weight: 600;
-                    cursor: pointer;
-                }
-
-                .auth-link:hover {
+                    color: var(--text-black);
                     text-decoration: underline;
+                    font-weight: 900;
+                    cursor: pointer;
+                    background: var(--accent-yellow);
+                    padding: 0.1rem 0.4rem;
+                    border: 2px solid #000;
+                    box-shadow: 2px 2px 0px #000;
+                    margin-left: 0.3rem;
                 }
 
                 /* Dashboard Views */
                 .dashboard-container {
                     flex: 1;
                     padding: 2.5rem 2rem;
-                    max-width: 1200px;
+                    max-width: 1280px;
                     margin: 0 auto;
                     width: 100%;
-                    animation: fadeIn 0.4s ease-out;
                 }
 
                 .welcome-hero {
-                    background: var(--card-bg);
-                    border: 1px solid var(--card-border);
-                    border-radius: 20px;
+                    background: var(--bg-card);
+                    border: 4px solid var(--border-thick);
                     padding: 2.5rem;
                     margin-bottom: 2rem;
-                    position: relative;
-                    overflow: hidden;
-                    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+                    box-shadow: var(--shadow-large);
                 }
 
-                .welcome-hero::after {
-                    content: '';
-                    position: absolute;
-                    top: -50%;
-                    right: -10%;
-                    width: 300px;
-                    height: 300px;
-                    background: radial-gradient(circle, rgba(99, 102, 241, 0.2) 0%, transparent 70%);
-                    pointer-events: none;
+                .hero-tag {
+                    display: inline-block;
+                    background: #000;
+                    color: #fff;
+                    padding: 0.35rem 0.85rem;
+                    font-size: 0.85rem;
+                    font-weight: 800;
+                    text-transform: uppercase;
+                    letter-spacing: 0.08em;
+                    margin-bottom: 1rem;
                 }
 
-                .grid-3 {
-                    display: grid;
-                    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-                    gap: 1.5rem;
-                }
-
-                .dash-card {
-                    background: var(--card-bg);
-                    border: 1px solid var(--card-border);
-                    border-radius: 16px;
-                    padding: 1.75rem;
-                    transition: transform 0.2s ease, border-color 0.2s ease;
-                }
-
-                .dash-card:hover {
-                    transform: translateY(-3px);
-                    border-color: rgba(99, 102, 241, 0.3);
-                }
-
-                .dash-card-title {
-                    font-size: 1.1rem;
-                    font-weight: 600;
+                .hero-title {
+                    font-size: 2.5rem;
+                    font-weight: 900;
+                    text-transform: uppercase;
+                    letter-spacing: -0.03em;
+                    line-height: 1.1;
                     margin-bottom: 0.75rem;
+                }
+
+                .grid-2x2 {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                    gap: 1.75rem;
+                }
+
+                .brutal-card {
+                    background: var(--bg-card);
+                    border: 4px solid var(--border-thick);
+                    padding: 2rem;
+                    box-shadow: var(--shadow-hard);
+                    transition: transform 0.1s ease, box-shadow 0.1s ease;
+                }
+
+                .brutal-card:hover {
+                    transform: translate(-3px, -3px);
+                    box-shadow: 8px 8px 0px #000;
+                }
+
+                .card-header-bar {
                     display: flex;
                     align-items: center;
-                    gap: 0.5rem;
+                    justify-content: space-between;
+                    border-bottom: 3px solid #000;
+                    padding-bottom: 0.75rem;
+                    margin-bottom: 1.25rem;
                 }
 
-                .dash-card-desc {
-                    color: var(--text-muted);
-                    font-size: 0.9rem;
-                    line-height: 1.5;
+                .card-title {
+                    font-size: 1.2rem;
+                    font-weight: 900;
+                    text-transform: uppercase;
+                    letter-spacing: -0.01em;
                 }
 
-                .stat-number {
-                    font-size: 2.25rem;
-                    font-weight: 800;
-                    margin: 0.5rem 0;
-                    background: var(--primary-gradient);
-                    -webkit-background-clip: text;
-                    -webkit-text-fill-color: transparent;
+                .stat-box {
+                    font-size: 3.5rem;
+                    font-weight: 900;
+                    line-height: 1;
+                    margin: 1rem 0;
+                    font-family: 'JetBrains Mono', monospace;
+                }
+
+                .stat-box-yellow {
+                    background: var(--accent-yellow);
+                    display: inline-block;
+                    padding: 0.2rem 0.8rem;
+                    border: 3px solid #000;
+                    box-shadow: 3px 3px 0px #000;
+                }
+
+                .stat-box-green {
+                    background: var(--accent-green);
+                    display: inline-block;
+                    padding: 0.2rem 0.8rem;
+                    border: 3px solid #000;
+                    box-shadow: 3px 3px 0px #000;
+                }
+
+                .stat-box-rose {
+                    background: var(--accent-rose);
+                    color: #fff;
+                    display: inline-block;
+                    padding: 0.2rem 0.8rem;
+                    border: 3px solid #000;
+                    box-shadow: 3px 3px 0px #000;
+                }
+
+                .stat-grid-4 {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+                    gap: 1.5rem;
+                    margin-bottom: 2rem;
                 }
 
                 /* Loader */
-                .spinner {
-                    width: 20px;
-                    height: 20px;
-                    border: 2px solid rgba(255, 255, 255, 0.3);
-                    border-radius: 50%;
-                    border-top-color: #fff;
-                    animation: spin 0.8s linear infinite;
+                .spinner-block {
+                    width: 24px;
+                    height: 24px;
+                    border: 4px solid #000;
+                    border-top-color: var(--accent-yellow);
+                    animation: spin 0.6s linear infinite;
+                    display: inline-block;
                 }
 
                 @keyframes spin {
@@ -371,16 +459,26 @@
                     flex-direction: column;
                     align-items: center;
                     justify-content: center;
-                    gap: 1rem;
-                    color: var(--text-muted);
+                    gap: 1.25rem;
+                }
+
+                .loader-box {
+                    background: #fff;
+                    border: 4px solid #000;
+                    padding: 2rem;
+                    box-shadow: var(--shadow-large);
+                    text-align: center;
                 }
             </style>
         </head>
         <body>
             <div id="app-root">
-                <div class="page-loader" id="loader-view">
-                    <div class="spinner" style="width: 36px; height: 36px; border-width: 3px;"></div>
-                    <p style="font-weight: 500;">Initializing Dayflow HRMS...</p>
+                <div class="page-loader">
+                    <div class="loader-box">
+                        <div class="spinner-block" style="width: 44px; height: 44px;"></div>
+                        <h2 style="margin-top: 1rem; font-weight: 900; text-transform: uppercase;">DAYFLOW HRMS</h2>
+                        <p style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted); margin-top: 0.25rem;">EVERY WORKDAY, PERFECTLY ALIGNED.</p>
+                    </div>
                 </div>
             </div>
 
@@ -392,7 +490,8 @@
                     user: null,
                     loading: false,
                     error: null,
-                    successMsg: null
+                    successMsg: null,
+                    checkedIn: false
                 };
 
                 // Helper to execute JSON-RPC API requests to Dayflow Odoo backend
@@ -413,12 +512,12 @@
                         });
 
                         if (!response.ok) {
-                            throw new Error(`Server returned HTTP ${response.status}`);
+                            throw new Error(`Server HTTP ${response.status}`);
                         }
 
                         const data = await response.json();
                         if (data.error) {
-                            const msg = data.error.data?.message || data.error.message || 'API operation failed.';
+                            const msg = data.error.data?.message || data.error.message || 'Operation failed.';
                             throw new Error(msg);
                         }
                         return data.result;
@@ -439,7 +538,6 @@
                             state.view = 'LOGIN';
                         }
                     } catch (err) {
-                        // Session expired or unauthenticated
                         state.view = 'LOGIN';
                     } finally {
                         render();
@@ -457,7 +555,7 @@
                     const password = document.getElementById('login-password').value.trim();
 
                     if (!email || !password) {
-                        state.error = 'Please enter both email and password.';
+                        state.error = 'EMAIL AND PASSWORD REQUIRED.';
                         state.loading = false;
                         render();
                         return;
@@ -470,10 +568,10 @@
                             state.view = result.role === 'hr_admin' ? 'HR_ADMIN_DASHBOARD' : 'EMPLOYEE_DASHBOARD';
                             state.error = null;
                         } else {
-                            state.error = result.message || 'Invalid login credentials.';
+                            state.error = result.message || 'INVALID LOGIN CREDENTIALS.';
                         }
                     } catch (err) {
-                        state.error = err.message || 'Failed to log in. Please check credentials.';
+                        state.error = err.message || 'AUTHENTICATION FAILED.';
                     } finally {
                         state.loading = false;
                         render();
@@ -495,7 +593,7 @@
                     const role = document.getElementById('signup-role').value;
 
                     if (!empId || !name || !email || !password) {
-                        state.error = 'All fields are required.';
+                        state.error = 'ALL FIELDS ARE REQUIRED.';
                         state.loading = false;
                         render();
                         return;
@@ -503,7 +601,7 @@
 
                     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                     if (!emailRegex.test(email)) {
-                        state.error = 'Please enter a valid email address.';
+                        state.error = 'INVALID EMAIL FORMAT.';
                         state.loading = false;
                         render();
                         return;
@@ -519,10 +617,9 @@
                         });
 
                         if (result && result.status === 'success') {
-                            state.successMsg = 'Account registered successfully! Logging you in...';
+                            state.successMsg = 'ACCOUNT REGISTERED! LOGGING IN...';
                             render();
                             
-                            // Auto Login after successful signup
                             const loginRes = await callApi('/dayflow/auth/login', { login: email, password: password });
                             if (loginRes && loginRes.status === 'success') {
                                 state.user = loginRes;
@@ -530,13 +627,13 @@
                                 state.successMsg = null;
                             } else {
                                 state.view = 'LOGIN';
-                                state.successMsg = 'Account created. Please log in.';
+                                state.successMsg = 'ACCOUNT CREATED. PLEASE LOG IN.';
                             }
                         } else {
-                            state.error = result.message || 'Registration failed.';
+                            state.error = result.message || 'REGISTRATION FAILED.';
                         }
                     } catch (err) {
-                        state.error = err.message || 'Registration failed.';
+                        state.error = err.message || 'REGISTRATION FAILED.';
                     } finally {
                         state.loading = false;
                         render();
@@ -561,6 +658,12 @@
                     }
                 }
 
+                // Action: Toggle Employee Attendance Check In / Check Out
+                function toggleCheckIn() {
+                    state.checkedIn = !state.checkedIn;
+                    render();
+                }
+
                 // Render UI Views based on current state
                 function render() {
                     const root = document.getElementById('app-root');
@@ -569,8 +672,11 @@
                     if (state.view === 'INITIALIZING') {
                         root.innerHTML = `
                             <div class="page-loader">
-                                <div class="spinner" style="width: 36px; height: 36px; border-width: 3px;"></div>
-                                <p style="font-weight: 500;">Initializing Dayflow HRMS...</p>
+                                <div class="loader-box">
+                                    <div class="spinner-block" style="width: 44px; height: 44px;"></div>
+                                    <h2 style="margin-top: 1rem; font-weight: 900; text-transform: uppercase;">DAYFLOW HRMS</h2>
+                                    <p style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted); margin-top: 0.25rem;">EVERY WORKDAY, PERFECTLY ALIGNED.</p>
+                                </div>
                             </div>
                         `;
                         return;
@@ -578,22 +684,23 @@
 
                     let contentHtml = '';
 
-                    // Navbar for Authenticated Users
+                    // Navbar Header for Authenticated Session
                     const navbarHtml = state.user ? `
                         <header class="navbar">
                             <div class="brand-logo">
-                                <div class="brand-icon">D</div>
-                                Dayflow HRMS
+                                DAYFLOW
+                                <span class="brand-badge">HRMS</span>
+                                <span class="tagline-text">| Every workday, perfectly aligned.</span>
                             </div>
                             <div class="user-nav-profile">
-                                <span class="badge ${state.user.role === 'hr_admin' ? 'badge-admin' : 'badge-employee'}">
-                                    ${state.user.role === 'hr_admin' ? 'HR / Admin' : 'Employee'}
+                                <span class="badge-role ${state.user.role === 'hr_admin' ? 'badge-admin' : 'badge-employee'}">
+                                    ${state.user.role === 'hr_admin' ? 'HR / ADMIN' : 'EMPLOYEE'}
                                 </span>
                                 <div style="text-align: right;">
-                                    <div style="font-weight: 600; font-size: 0.95rem;">${escapeHtml(state.user.name || state.user.login)}</div>
-                                    <div style="font-size: 0.75rem; color: var(--text-muted);">ID: ${escapeHtml(state.user.employee_code || 'N/A')}</div>
+                                    <div style="font-weight: 900; font-size: 0.95rem; text-transform: uppercase;">${escapeHtml(state.user.name || state.user.login)}</div>
+                                    <div class="mono" style="font-size: 0.8rem; font-weight: 800; color: var(--text-muted);">ID: ${escapeHtml(state.user.employee_code || 'N/A')}</div>
                                 </div>
-                                <button class="btn-logout" onclick="handleLogout()">Logout</button>
+                                <button class="btn-brutal btn-logout" onclick="handleLogout()">LOGOUT</button>
                             </div>
                         </header>
                     ` : '';
@@ -602,33 +709,35 @@
                         contentHtml = `
                             <div class="auth-wrapper">
                                 <div class="auth-card">
-                                    <div class="brand-logo" style="margin-bottom: 1.5rem;">
-                                        <div class="brand-icon">D</div>
-                                        Dayflow
+                                    <div class="auth-header">
+                                        <div class="brand-logo" style="margin-bottom: 0.75rem;">
+                                            DAYFLOW
+                                            <span class="brand-badge">SYSTEM</span>
+                                        </div>
+                                        <h1 class="auth-title">AUTHENTICATE</h1>
+                                        <p class="auth-subtitle">Every workday, perfectly aligned.</p>
                                     </div>
-                                    <h1 class="auth-title">Welcome Back</h1>
-                                    <p class="auth-subtitle">Log in to manage your HRMS profile and portal</p>
 
-                                    ${state.error ? `<div class="alert alert-error">⚠️ ${escapeHtml(state.error)}</div>` : ''}
+                                    ${state.error ? `<div class="alert alert-error">❌ ${escapeHtml(state.error)}</div>` : ''}
                                     ${state.successMsg ? `<div class="alert alert-success">✓ ${escapeHtml(state.successMsg)}</div>` : ''}
 
                                     <form onsubmit="handleLogin(event)">
                                         <div class="form-group">
-                                            <label class="form-label" for="login-email">Email Address</label>
-                                            <input type="email" id="login-email" class="form-input" placeholder="name@company.com" required="required" autocomplete="email" />
+                                            <label class="form-label" for="login-email">WORK EMAIL ADDRESS</label>
+                                            <input type="email" id="login-email" class="form-input" placeholder="user@dayflow.org" required="required" autocomplete="email" />
                                         </div>
                                         <div class="form-group">
-                                            <label class="form-label" for="login-password">Password</label>
+                                            <label class="form-label" for="login-password">PASSWORD</label>
                                             <input type="password" id="login-password" class="form-input" placeholder="••••••••" required="required" autocomplete="current-password" />
                                         </div>
-                                        <button type="submit" class="btn-primary" ${state.loading ? 'disabled' : ''}>
-                                            ${state.loading ? '<div class="spinner"></div> Authenticating...' : 'Sign In'}
+                                        <button type="submit" class="btn-submit" ${state.loading ? 'disabled' : ''}>
+                                            ${state.loading ? '<span class="spinner-block"></span> AUTHENTICATING...' : 'ACCESS SYSTEM'}
                                         </button>
                                     </form>
 
                                     <div class="auth-footer">
-                                        Don't have an account? 
-                                        <span class="auth-link" onclick="state.view='SIGNUP'; state.error=null; render();">Create Account</span>
+                                        NEW EMPLOYEE? 
+                                        <span class="auth-link" onclick="state.view='SIGNUP'; state.error=null; render();">CREATE ACCOUNT</span>
                                     </div>
                                 </div>
                             </div>
@@ -637,47 +746,49 @@
                         contentHtml = `
                             <div class="auth-wrapper">
                                 <div class="auth-card">
-                                    <div class="brand-logo" style="margin-bottom: 1.5rem;">
-                                        <div class="brand-icon">D</div>
-                                        Dayflow
+                                    <div class="auth-header">
+                                        <div class="brand-logo" style="margin-bottom: 0.75rem;">
+                                            DAYFLOW
+                                            <span class="brand-badge">REGISTRATION</span>
+                                        </div>
+                                        <h1 class="auth-title">NEW PROFILE</h1>
+                                        <p class="auth-subtitle">Register user identity &amp; linked HR profile</p>
                                     </div>
-                                    <h1 class="auth-title">Create Account</h1>
-                                    <p class="auth-subtitle">Register your employee profile with Dayflow HRMS</p>
 
-                                    ${state.error ? `<div class="alert alert-error">⚠️ ${escapeHtml(state.error)}</div>` : ''}
+                                    ${state.error ? `<div class="alert alert-error">❌ ${escapeHtml(state.error)}</div>` : ''}
 
                                     <form onsubmit="handleSignup(event)">
                                         <div class="form-group">
-                                            <label class="form-label" for="signup-empid">Employee ID</label>
-                                            <input type="text" id="signup-empid" class="form-input" placeholder="e.g. EMP101" required="required" />
+                                            <label class="form-label" for="signup-empid">CANONICAL EMPLOYEE ID</label>
+                                            <input type="text" id="signup-empid" class="form-input mono" placeholder="e.g. EMP101" required="required" />
                                         </div>
                                         <div class="form-group">
-                                            <label class="form-label" for="signup-name">Full Name</label>
-                                            <input type="text" id="signup-name" class="form-input" placeholder="John Doe" required="required" />
+                                            <label class="form-label" for="signup-name">FULL NAME</label>
+                                            <input type="text" id="signup-name" class="form-input" placeholder="ALICE SMITH" required="required" />
                                         </div>
                                         <div class="form-group">
-                                            <label class="form-label" for="signup-email">Work Email Address</label>
-                                            <input type="email" id="signup-email" class="form-input" placeholder="john@company.com" required="required" />
+                                            <label class="form-label" for="signup-email">WORK EMAIL ADDRESS</label>
+                                            <input type="email" id="signup-email" class="form-input" placeholder="alice@dayflow.org" required="required" />
                                         </div>
                                         <div class="form-group">
-                                            <label class="form-label" for="signup-password">Password</label>
+                                            <label class="form-label" for="signup-password">PASSWORD</label>
                                             <input type="password" id="signup-password" class="form-input" placeholder="••••••••" required="required" minlength="6" />
                                         </div>
                                         <div class="form-group">
-                                            <label class="form-label" for="signup-role">Dayflow Role</label>
+                                            <label class="form-label" for="signup-role">AUTHORIZATION ROLE</label>
                                             <select id="signup-role" class="form-select">
-                                                <option value="Employee">Employee</option>
-                                                <option value="HR/Admin">HR / Admin</option>
+                                                <option value="Employee">EMPLOYEE</option>
+                                                <option value="HR/Admin">HR / ADMIN</option>
                                             </select>
                                         </div>
-                                        <button type="submit" class="btn-primary" ${state.loading ? 'disabled' : ''}>
-                                            ${state.loading ? '<div class="spinner"></div> Registering...' : 'Complete Registration'}
+                                        <button type="submit" class="btn-submit" ${state.loading ? 'disabled' : ''}>
+                                            ${state.loading ? '<span class="spinner-block"></span> REGISTERING...' : 'REGISTER PROFILE'}
                                         </button>
                                     </form>
 
                                     <div class="auth-footer">
-                                        Already registered? 
-                                        <span class="auth-link" onclick="state.view='LOGIN'; state.error=null; render();">Sign In</span>
+                                        ALREADY REGISTERED? 
+                                        <span class="auth-link" onclick="state.view='LOGIN'; state.error=null; render();">SIGN IN</span>
                                     </div>
                                 </div>
                             </div>
@@ -687,26 +798,71 @@
                             ${navbarHtml}
                             <main class="dashboard-container">
                                 <section class="welcome-hero">
-                                    <span class="badge badge-employee" style="margin-bottom: 0.75rem; display: inline-block;">Employee Portal</span>
-                                    <h1 style="font-size: 2rem; font-weight: 800; margin-bottom: 0.5rem;">Welcome back, ${escapeHtml(state.user.name || 'Employee')}! 👋</h1>
-                                    <p style="color: var(--text-muted); font-size: 1rem;">Employee ID: <strong style="color: var(--text-main);">${escapeHtml(state.user.employee_code || 'N/A')}</strong> | Email: <strong style="color: var(--text-main);">${escapeHtml(state.user.login)}</strong></p>
+                                    <span class="hero-tag">EMPLOYEE PORTAL</span>
+                                    <h1 class="hero-title">DAYFLOW OPERATIONS</h1>
+                                    <p style="font-size: 1.1rem; font-weight: 700; color: var(--text-black);">
+                                        WELCOME, <strong>${escapeHtml(state.user.name || 'EMPLOYEE')}</strong> | 
+                                        ID: <span class="mono" style="background: var(--accent-yellow); padding: 0.1rem 0.5rem; border: 2px solid #000;">${escapeHtml(state.user.employee_code || 'N/A')}</span> | 
+                                        EMAIL: <span class="mono">${escapeHtml(state.user.login)}</span>
+                                    </p>
                                 </section>
 
-                                <div class="grid-3">
-                                    <div class="dash-card">
-                                        <div class="dash-card-title">⏱️ Attendance &amp; Check-in</div>
-                                        <div class="dash-card-desc">Log your daily work hours, check-in times, and break duration.</div>
-                                        <div style="margin-top: 1.25rem; font-size: 0.85rem; color: var(--accent-emerald); font-weight: 600;">Status: Active Session</div>
+                                <div class="grid-2x2">
+                                    <!-- TODAY'S ATTENDANCE -->
+                                    <div class="brutal-card">
+                                        <div class="card-header-bar">
+                                            <div class="card-title">⏱️ TODAY'S ATTENDANCE</div>
+                                            <span class="badge-role badge-employee">${state.checkedIn ? 'CHECKED IN' : 'PRESENT'}</span>
+                                        </div>
+                                        <div style="margin: 1.25rem 0;">
+                                            <button class="btn-action-big" onclick="toggleCheckIn()">
+                                                ${state.checkedIn ? '⏹️ [ CHECK OUT ]' : '▶️ [ CHECK IN ]'}
+                                            </button>
+                                        </div>
+                                        <div class="mono" style="font-weight: 800; font-size: 1rem;">
+                                            LOGGED TIME: <span style="background: var(--accent-green); padding: 0.2rem 0.6rem; border: 2px solid #000;">09:02 AM</span>
+                                        </div>
                                     </div>
-                                    <div class="dash-card">
-                                        <div class="dash-card-title">📅 Leave Requests</div>
-                                        <div class="dash-card-desc">Apply for annual leave, sick leave, and track your remaining balance.</div>
-                                        <div style="margin-top: 1.25rem; font-size: 0.85rem; color: #818cf8; font-weight: 600;">Balance: 14 Days Available</div>
+
+                                    <!-- LEAVE STATUS -->
+                                    <div class="brutal-card">
+                                        <div class="card-header-bar">
+                                            <div class="card-title">📅 LEAVE STATUS</div>
+                                            <span class="badge-role" style="background: var(--accent-yellow); color: #000;">ACTIVE</span>
+                                        </div>
+                                        <div class="stat-box">
+                                            <span class="stat-box-yellow">2 PENDING</span>
+                                        </div>
+                                        <div style="font-weight: 800; font-size: 0.95rem; text-transform: uppercase;">
+                                            REMAINING BALANCE: 14 DAYS AVAILABLE
+                                        </div>
                                     </div>
-                                    <div class="dash-card">
-                                        <div class="dash-card-title">💳 My Payslips</div>
-                                        <div class="dash-card-desc">View monthly salary statements, tax deductions, and download PDF slips.</div>
-                                        <div style="margin-top: 1.25rem; font-size: 0.85rem; color: var(--accent-amber); font-weight: 600;">Latest: Ready for Download</div>
+
+                                    <!-- PAYROLL SUMMARY -->
+                                    <div class="brutal-card">
+                                        <div class="card-header-bar">
+                                            <div class="card-title">💳 PAYROLL / SALARY</div>
+                                            <span class="badge-role badge-employee">VERIFIED</span>
+                                        </div>
+                                        <div class="stat-box">
+                                            <span class="stat-box-green">₹75,000</span>
+                                        </div>
+                                        <div style="font-weight: 800; font-size: 0.95rem; text-transform: uppercase;">
+                                            MONTHLY SALARY STATEMENT READY FOR DOWNLOAD
+                                        </div>
+                                    </div>
+
+                                    <!-- PROFILE CONTRACT -->
+                                    <div class="brutal-card">
+                                        <div class="card-header-bar">
+                                            <div class="card-title">👤 PROFILE INFO</div>
+                                            <span class="badge-role" style="background: var(--accent-blue); color: #fff;">LINKED</span>
+                                        </div>
+                                        <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem; font-weight: 700;">
+                                            <div>FULL NAME: <strong>${escapeHtml(state.user.name)}</strong></div>
+                                            <div>CANONICAL CODE: <span class="mono" style="background: #fff; padding: 0.1rem 0.4rem; border: 2px solid #000;">${escapeHtml(state.user.employee_code || 'N/A')}</span></div>
+                                            <div>SECURITY ROLE: <strong>${escapeHtml(state.user.role.toUpperCase())}</strong></div>
+                                        </div>
                                     </div>
                                 </div>
                             </main>
@@ -716,26 +872,71 @@
                             ${navbarHtml}
                             <main class="dashboard-container">
                                 <section class="welcome-hero">
-                                    <span class="badge badge-admin" style="margin-bottom: 0.75rem; display: inline-block;">HR / Admin Portal</span>
-                                    <h1 style="font-size: 2rem; font-weight: 800; margin-bottom: 0.5rem;">HR Management Control Center</h1>
-                                    <p style="color: var(--text-muted); font-size: 1rem;">Administrator: <strong style="color: var(--text-main);">${escapeHtml(state.user.name || state.user.login)}</strong> | ID: <strong style="color: var(--text-main);">${escapeHtml(state.user.employee_code || 'N/A')}</strong></p>
+                                    <span class="hero-tag" style="background: var(--accent-purple); color: #fff;">HR CONTROL CENTER</span>
+                                    <h1 class="hero-title">DAYFLOW SYSTEM ADMINISTRATION</h1>
+                                    <p style="font-size: 1.1rem; font-weight: 700; color: var(--text-black);">
+                                        ADMINISTRATOR: <strong>${escapeHtml(state.user.name || state.user.login)}</strong> | 
+                                        ADMIN ID: <span class="mono" style="background: var(--accent-purple); color: #fff; padding: 0.1rem 0.5rem; border: 2px solid #000;">${escapeHtml(state.user.employee_code || 'ADM001')}</span>
+                                    </p>
                                 </section>
 
-                                <div class="grid-3">
-                                    <div class="dash-card">
-                                        <div class="dash-card-title">👥 Employee Directory</div>
-                                        <div class="stat-number">28</div>
-                                        <div class="dash-card-desc">Total registered employees across all departments.</div>
+                                <!-- HR METRICS OVERVIEW GRID -->
+                                <div class="stat-grid-4">
+                                    <div class="brutal-card" style="padding: 1.5rem;">
+                                        <div class="card-title" style="font-size: 0.95rem; color: var(--text-muted);">EMPLOYEES</div>
+                                        <div class="stat-box" style="font-size: 3rem; margin: 0.5rem 0 0 0;">
+                                            <span class="stat-box-yellow">42</span>
+                                        </div>
                                     </div>
-                                    <div class="dash-card">
-                                        <div class="dash-card-title">📋 Pending Leave Approvals</div>
-                                        <div class="stat-number" style="background: linear-gradient(135deg, #f59e0b, #fbbf24); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">3</div>
-                                        <div class="dash-card-desc">Leave applications awaiting administrative review.</div>
+                                    <div class="brutal-card" style="padding: 1.5rem;">
+                                        <div class="card-title" style="font-size: 0.95rem; color: var(--text-muted);">PRESENT TODAY</div>
+                                        <div class="stat-box" style="font-size: 3rem; margin: 0.5rem 0 0 0;">
+                                            <span class="stat-box-green">37</span>
+                                        </div>
                                     </div>
-                                    <div class="dash-card">
-                                        <div class="dash-card-title">💼 Payroll Processing</div>
-                                        <div class="stat-number" style="background: linear-gradient(135deg, #10b981, #34d399); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Active</div>
-                                        <div class="dash-card-desc">Monthly salary computations and payment dispatches.</div>
+                                    <div class="brutal-card" style="padding: 1.5rem;">
+                                        <div class="card-title" style="font-size: 0.95rem; color: var(--text-muted);">ON LEAVE</div>
+                                        <div class="stat-box" style="font-size: 3rem; margin: 0.5rem 0 0 0;">
+                                            <span style="background: var(--accent-blue); color: #fff; display: inline-block; padding: 0.2rem 0.8rem; border: 3px solid #000; box-shadow: 3px 3px 0px #000;">5</span>
+                                        </div>
+                                    </div>
+                                    <div class="brutal-card" style="padding: 1.5rem;">
+                                        <div class="card-title" style="font-size: 0.95rem; color: var(--text-muted);">PENDING LEAVE</div>
+                                        <div class="stat-box" style="font-size: 3rem; margin: 0.5rem 0 0 0;">
+                                            <span class="stat-box-rose">3</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- HR NAVIGATION & MANAGEMENT GRID -->
+                                <div class="grid-2x2">
+                                    <div class="brutal-card">
+                                        <div class="card-header-bar">
+                                            <div class="card-title">👥 EMPLOYEES</div>
+                                            <button class="btn-brutal" style="padding: 0.3rem 0.8rem; font-size: 0.8rem;">MANAGE</button>
+                                        </div>
+                                        <p style="font-weight: 700; color: var(--text-muted);">View, register, and update canonical employee profiles and organizational structures.</p>
+                                    </div>
+                                    <div class="brutal-card">
+                                        <div class="card-header-bar">
+                                            <div class="card-title">⏱️ ATTENDANCE</div>
+                                            <button class="btn-brutal" style="padding: 0.3rem 0.8rem; font-size: 0.8rem;">LOGS</button>
+                                        </div>
+                                        <p style="font-weight: 700; color: var(--text-muted);">Audit daily check-in times, work hours, overtime, and presence logs.</p>
+                                    </div>
+                                    <div class="brutal-card">
+                                        <div class="card-header-bar">
+                                            <div class="card-title">📋 LEAVE APPROVALS</div>
+                                            <button class="btn-brutal" style="padding: 0.3rem 0.8rem; font-size: 0.8rem; background: var(--accent-yellow);">3 NEW</button>
+                                        </div>
+                                        <p style="font-weight: 700; color: var(--text-muted);">Review, approve, or reject employee leave requests and time-off balances.</p>
+                                    </div>
+                                    <div class="brutal-card">
+                                        <div class="card-header-bar">
+                                            <div class="card-title">💼 PAYROLL</div>
+                                            <button class="btn-brutal" style="padding: 0.3rem 0.8rem; font-size: 0.8rem; background: var(--accent-green);">PROCESS</button>
+                                        </div>
+                                        <p style="font-weight: 700; color: var(--text-muted);">Generate monthly salary slips, tax computations, and dispatch payment records.</p>
                                     </div>
                                 </div>
                             </main>
