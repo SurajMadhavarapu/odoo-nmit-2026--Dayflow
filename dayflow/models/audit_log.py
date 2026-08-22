@@ -1,125 +1,138 @@
 # -*- coding: utf-8 -*-
 """
-Dayflow – Audit Log Model
+Dayflow - Audit Log Model
+Lightweight, append-only record of important HR changes.
 
-Lightweight audit trail for critical HR changes.
-Records: who, when, what model/record, what action, old/new value.
+INTEGRATION CONTRACT:
+  model  : dayflow.audit.log
+  Access : HR Admin read-only via UI; no one can create/edit/delete manually.
+           Written automatically via sudo() calls in employee.py, payroll.py, leave.py.
 
-Usage (from other models):
-    self.env['dayflow.audit.log'].sudo().log(
-        model='dayflow.payroll',
-        res_id=self.id,
-        action='update',
-        field_name='basic_salary',
-        old_value='50000',
-        new_value='55000',
-    )
+  fields :
+    user_id      Many2one res.users   who made the change
+    timestamp    Datetime             when (auto-set on create)
+    model_name   Char                 technical model name
+    record_id    Integer              ID of the changed record
+    record_name  Char                 human-readable label
+    record_ref   Char (computed)      "ModelName#ID (label)" — shown in views
+    action       Selection            create|update|approve|reject|submit|confirm
+    field_name   Char                 changed field
+    old_value    Char                 previous value
+    new_value    Char                 new value
+
+  To write an audit entry from your model:
+    self.env['dayflow.audit.log'].sudo().create({
+        'user_id':     self.env.uid,
+        'model_name':  self._name,
+        'record_id':   record.id,
+        'record_name': record.display_name,
+        'action':      'approve',   # or update|reject|submit|create
+        'field_name':  'state',
+        'old_value':   'pending',
+        'new_value':   'approved',
+    })
 """
 
-from odoo import models, fields, api
+from odoo import api, fields, models, _
+from odoo.exceptions import UserError
 
 
 class DayflowAuditLog(models.Model):
     _name = 'dayflow.audit.log'
     _description = 'Dayflow HR Audit Log'
     _order = 'timestamp desc'
+    # Suppress Odoo auto write_uid/write_date on this model (it's append-only)
+    _log_access = False
 
-    # Who
+    # ------------------------------------------------------------------
+    # Fields
+    # ------------------------------------------------------------------
     user_id = fields.Many2one(
         comodel_name='res.users',
         string='Changed By',
-        default=lambda self: self.env.uid,
-        readonly=True,
+        required=True,
+        ondelete='set null',
         index=True,
     )
-
-    # When
     timestamp = fields.Datetime(
         string='Timestamp',
+        required=True,
         default=fields.Datetime.now,
         readonly=True,
         index=True,
     )
-
-    # What record
     model_name = fields.Char(
         string='Model',
-        readonly=True,
-        index=True,
+        required=True,
     )
     record_id = fields.Integer(
         string='Record ID',
-        readonly=True,
-        index=True,
+        required=True,
     )
-    # Human-readable reference
+    record_name = fields.Char(
+        string='Record Label',
+    )
     record_ref = fields.Char(
-        string='Record Reference',
-        readonly=True,
-        help='Display name of the changed record at the time of the change',
+        string='Record',
+        compute='_compute_record_ref',
+        store=True,
+        help='Human-readable reference shown in the audit list view',
     )
-
-    # What happened
     action = fields.Selection(
         selection=[
-            ('create', 'Created'),
-            ('update', 'Updated'),
+            ('create',  'Created'),
+            ('update',  'Updated'),
             ('approve', 'Approved'),
-            ('reject', 'Rejected'),
+            ('reject',  'Rejected'),
+            ('submit',  'Submitted'),
+            ('confirm', 'Confirmed'),
             ('archive', 'Archived'),
-            ('other', 'Other'),
+            ('other',   'Other'),
         ],
         string='Action',
-        readonly=True,
+        required=True,
     )
-    field_name = fields.Char(string='Field', readonly=True)
-    old_value = fields.Text(string='Previous Value', readonly=True)
-    new_value = fields.Text(string='New Value', readonly=True)
-    notes = fields.Text(string='Additional Notes', readonly=True)
+    field_name = fields.Char(string='Field')
+    old_value = fields.Char(string='Previous Value')
+    new_value = fields.Char(string='New Value')
 
     # ------------------------------------------------------------------
-    # Convenience factory method
+    # Computed record reference
     # ------------------------------------------------------------------
-    @api.model
-    def log(
-        self,
-        model,
-        res_id,
-        action,
-        field_name=None,
-        old_value=None,
-        new_value=None,
-        notes=None,
-    ):
-        """
-        Create an audit log entry.
+    @api.depends('model_name', 'record_id', 'record_name')
+    def _compute_record_ref(self):
+        for rec in self:
+            parts = []
+            if rec.model_name:
+                parts.append(rec.model_name)
+            if rec.record_id:
+                parts.append(f'#{rec.record_id}')
+            if rec.record_name:
+                parts.append(f'({rec.record_name})')
+            rec.record_ref = ' '.join(parts)
 
-        Args:
-            model (str): Odoo model technical name, e.g. 'dayflow.payroll'
-            res_id (int): ID of the changed record
-            action (str): one of create|update|approve|reject|archive|other
-            field_name (str): optional field that changed
-            old_value (str): optional previous value (cast to str)
-            new_value (str): optional new value (cast to str)
-            notes (str): optional free-text notes
-        """
-        # Try to get a human-readable name for the record
-        record_ref = ''
-        try:
-            rec = self.env[model].browse(res_id)
-            record_ref = rec.display_name or str(res_id)
-        except Exception:
-            record_ref = str(res_id)
+    # ------------------------------------------------------------------
+    # Display name
+    # ------------------------------------------------------------------
+    def name_get(self):
+        result = []
+        action_labels = dict(self._fields['action'].selection)
+        for rec in self:
+            ts = str(rec.timestamp)[:16] if rec.timestamp else ''
+            user = rec.user_id.name or 'Unknown'
+            action = action_labels.get(rec.action, rec.action)
+            result.append((rec.id, f'[{ts}] {user} — {action}'))
+        return result
 
-        return self.create({
-            'user_id': self.env.uid,
-            'timestamp': fields.Datetime.now(),
-            'model_name': model,
-            'record_id': res_id,
-            'record_ref': record_ref,
-            'action': action,
-            'field_name': field_name,
-            'old_value': str(old_value) if old_value is not None else False,
-            'new_value': str(new_value) if new_value is not None else False,
-            'notes': notes,
-        })
+    # ------------------------------------------------------------------
+    # Immutability
+    # ------------------------------------------------------------------
+    def write(self, vals):
+        raise UserError(_('Audit log records are immutable and cannot be modified.'))
+
+    def unlink(self):
+        if not self.env.user.has_group('base.group_system'):
+            raise UserError(
+                _('Audit log records can only be deleted by system administrators.')
+            )
+        return super().unlink()

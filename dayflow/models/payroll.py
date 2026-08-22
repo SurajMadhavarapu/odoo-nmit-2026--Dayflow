@@ -1,129 +1,273 @@
 # -*- coding: utf-8 -*-
 """
-Dayflow – Payroll / Salary Model
-Owner: Mani (HR Core)
+Dayflow - Payroll / Salary Structure Model
+Hackathon MVP: one payroll record per employee per pay period.
 
-INTEGRATION CONTRACT (stable — do not rename without telling Suraj):
-  Model name  : dayflow.payroll
-  Employee FK : employee_id  → hr.employee (Many2one)
-  Fields      : basic_salary, allowances, deductions, net_salary (computed),
-                currency_id, effective_date, notes
-  Permissions : Employees READ own record only (enforced at ACL + model level)
-                HR/Admin  READ + WRITE all records
-  Audit       : All salary field changes are automatically logged to
-                dayflow.audit.log
+INTEGRATION CONTRACT:
+  model  : dayflow.payroll
+  fields :
+    employee_id          Many2one hr.employee   required
+    pay_period           Char                   e.g. "August 2026"
+    currency_id          Many2one res.currency  defaults to company currency
+    basic_salary         Monetary               required
+    house_rent_allowance Monetary               default 0
+    transport_allowance  Monetary               default 0
+    other_allowances     Monetary               default 0
+    gross_salary         Monetary (computed)    sum of earnings
+    provident_fund       Monetary               default 0
+    tax_deduction        Monetary               default 0
+    other_deductions     Monetary               default 0
+    total_deductions     Monetary (computed)    sum of deductions
+    net_salary           Monetary (computed)    gross - total_deductions
+    state                Selection              draft | confirmed | paid
+    notes                Text                   HR internal notes
+
+  Actions:
+    action_confirm()     HR: draft → confirmed
+    action_mark_paid()   HR: confirmed → paid
+    action_reset_draft() HR: any → draft
+
+  Permissions:
+    Employee : read own record only (enforced at model + ACL level)
+    HR Admin : full CRUD
 """
 
-from odoo import models, fields, api
-from odoo.exceptions import UserError
+from odoo import api, fields, models, _
+from odoo.exceptions import ValidationError, UserError
 
 
 class DayflowPayroll(models.Model):
     _name = 'dayflow.payroll'
     _description = 'Dayflow Payroll / Salary Structure'
-    _order = 'effective_date desc'
+    _order = 'employee_id, pay_period desc'
     _inherit = ['mail.thread', 'mail.activity.mixin']
 
     # ------------------------------------------------------------------
-    # Employee relationship — the single source of truth for who this
-    # payroll record belongs to. Never duplicate employee fields here.
+    # Header
     # ------------------------------------------------------------------
     employee_id = fields.Many2one(
         comodel_name='hr.employee',
         string='Employee',
         required=True,
-        ondelete='restrict',
+        ondelete='cascade',
         index=True,
         tracking=True,
     )
-
-    # ------------------------------------------------------------------
-    # Salary components
-    # ------------------------------------------------------------------
+    pay_period = fields.Char(
+        string='Pay Period',
+        required=True,
+        help='e.g. "August 2026"',
+        tracking=True,
+    )
     currency_id = fields.Many2one(
         comodel_name='res.currency',
         string='Currency',
         required=True,
-        default=lambda self: self.env.company.currency_id,
+        default=lambda self: self.env.company.currency_id.id,
     )
+    state = fields.Selection(
+        selection=[
+            ('draft',     'Draft'),
+            ('confirmed', 'Confirmed'),
+            ('paid',      'Paid'),
+        ],
+        string='Status',
+        default='draft',
+        required=True,
+        tracking=True,
+        index=True,
+    )
+
+    # ------------------------------------------------------------------
+    # Earnings
+    # ------------------------------------------------------------------
     basic_salary = fields.Monetary(
         string='Basic Salary',
         currency_field='currency_id',
         required=True,
+        default=0.0,
         tracking=True,
     )
-    allowances = fields.Monetary(
-        string='Allowances',
+    house_rent_allowance = fields.Monetary(
+        string='HRA',
+        currency_field='currency_id',
+        default=0.0,
+        help='House Rent Allowance',
+        tracking=True,
+    )
+    transport_allowance = fields.Monetary(
+        string='Transport Allowance',
         currency_field='currency_id',
         default=0.0,
         tracking=True,
-        help='Total allowances — HRA, transport, medical, etc.',
     )
-    deductions = fields.Monetary(
-        string='Deductions',
+    other_allowances = fields.Monetary(
+        string='Other Allowances',
         currency_field='currency_id',
         default=0.0,
         tracking=True,
-        help='Total deductions — tax, PF, loan repayments, etc.',
     )
+    gross_salary = fields.Monetary(
+        string='Gross Salary',
+        currency_field='currency_id',
+        compute='_compute_totals',
+        store=True,
+    )
+
+    # ------------------------------------------------------------------
+    # Deductions
+    # ------------------------------------------------------------------
+    provident_fund = fields.Monetary(
+        string='PF Deduction',
+        currency_field='currency_id',
+        default=0.0,
+        help='Provident Fund contribution',
+        tracking=True,
+    )
+    tax_deduction = fields.Monetary(
+        string='Tax Deduction',
+        currency_field='currency_id',
+        default=0.0,
+        tracking=True,
+    )
+    other_deductions = fields.Monetary(
+        string='Other Deductions',
+        currency_field='currency_id',
+        default=0.0,
+        tracking=True,
+    )
+    total_deductions = fields.Monetary(
+        string='Total Deductions',
+        currency_field='currency_id',
+        compute='_compute_totals',
+        store=True,
+    )
+
+    # ------------------------------------------------------------------
+    # Net
+    # ------------------------------------------------------------------
     net_salary = fields.Monetary(
         string='Net Salary',
         currency_field='currency_id',
-        compute='_compute_net_salary',
+        compute='_compute_totals',
         store=True,
-        tracking=True,
-        help='Computed: basic_salary + allowances - deductions',
     )
 
-    # ------------------------------------------------------------------
-    # Metadata
-    # ------------------------------------------------------------------
-    effective_date = fields.Date(
-        string='Effective From',
-        required=True,
-        default=fields.Date.today,
-        tracking=True,
-    )
     notes = fields.Text(
-        string='Notes / Remarks',
-        help='Internal HR notes. Not visible to employees.',
+        string='Notes',
+        help='Internal HR notes — not visible to employees in the UI',
     )
 
     # ------------------------------------------------------------------
-    # Computed net salary
+    # Computed totals
     # ------------------------------------------------------------------
-    @api.depends('basic_salary', 'allowances', 'deductions')
-    def _compute_net_salary(self):
+    @api.depends(
+        'basic_salary', 'house_rent_allowance', 'transport_allowance', 'other_allowances',
+        'provident_fund', 'tax_deduction', 'other_deductions',
+    )
+    def _compute_totals(self):
         for rec in self:
-            rec.net_salary = rec.basic_salary + rec.allowances - rec.deductions
+            gross = (
+                rec.basic_salary
+                + rec.house_rent_allowance
+                + rec.transport_allowance
+                + rec.other_allowances
+            )
+            deductions = (
+                rec.provident_fund
+                + rec.tax_deduction
+                + rec.other_deductions
+            )
+            rec.gross_salary = gross
+            rec.total_deductions = deductions
+            rec.net_salary = gross - deductions
 
     # ------------------------------------------------------------------
-    # Audit trail — automatically log every salary field change
+    # Constraints
+    # ------------------------------------------------------------------
+    @api.constrains(
+        'basic_salary', 'house_rent_allowance', 'transport_allowance', 'other_allowances',
+        'provident_fund', 'tax_deduction', 'other_deductions',
+    )
+    def _check_non_negative(self):
+        monetary_fields = [
+            'basic_salary', 'house_rent_allowance', 'transport_allowance', 'other_allowances',
+            'provident_fund', 'tax_deduction', 'other_deductions',
+        ]
+        for rec in self:
+            for fname in monetary_fields:
+                if rec[fname] < 0:
+                    raise ValidationError(
+                        _('Salary field "%s" cannot be negative.') % fname
+                    )
+
+    # ------------------------------------------------------------------
+    # Workflow actions
+    # ------------------------------------------------------------------
+    def action_confirm(self):
+        self.ensure_one()
+        if not self.env.user.has_group('dayflow.group_dayflow_hr_admin'):
+            raise UserError(_('Only HR/Admin users can confirm payroll records.'))
+        if self.state != 'draft':
+            raise UserError(_('Only draft records can be confirmed.'))
+        self.write({'state': 'confirmed'})
+        self._audit_salary('confirm')
+
+    def action_mark_paid(self):
+        self.ensure_one()
+        if not self.env.user.has_group('dayflow.group_dayflow_hr_admin'):
+            raise UserError(_('Only HR/Admin users can mark payroll as paid.'))
+        if self.state != 'confirmed':
+            raise UserError(_('Only confirmed records can be marked as paid.'))
+        self.write({'state': 'paid'})
+        self._audit_salary('paid')
+
+    def action_reset_draft(self):
+        self.ensure_one()
+        if not self.env.user.has_group('dayflow.group_dayflow_hr_admin'):
+            raise UserError(_('Only HR/Admin users can reset payroll records.'))
+        self.write({'state': 'draft'})
+
+    # ------------------------------------------------------------------
+    # Security: employees cannot write payroll
     # ------------------------------------------------------------------
     def write(self, vals):
-        audit_fields = {'basic_salary', 'allowances', 'deductions'}
+        if not self.env.user.has_group('dayflow.group_dayflow_hr_admin') and not self.env.su:
+            raise UserError(
+                _('Employees cannot modify salary/payroll records. Contact HR.')
+            )
+        # Audit all salary field changes
+        salary_fields = {
+            'basic_salary', 'house_rent_allowance', 'transport_allowance',
+            'other_allowances', 'provident_fund', 'tax_deduction', 'other_deductions',
+        }
         for rec in self:
-            for fname in audit_fields.intersection(vals.keys()):
-                old_val = getattr(rec, fname, None)
-                new_val = vals[fname]
-                if old_val != new_val:
-                    self.env['dayflow.audit.log'].sudo().log(
-                        model='dayflow.payroll',
-                        res_id=rec.id,
-                        action='update',
-                        field_name=fname,
-                        old_value=str(old_val),
-                        new_value=str(new_val),
-                    )
+            for fname in salary_fields & set(vals.keys()):
+                self.env['dayflow.audit.log'].sudo().create({
+                    'user_id': self.env.uid,
+                    'model_name': self._name,
+                    'record_id': rec.id,
+                    'record_name': rec.display_name,
+                    'action': 'update',
+                    'field_name': fname,
+                    'old_value': str(rec[fname]),
+                    'new_value': str(vals[fname]),
+                })
         return super().write(vals)
 
-    # ------------------------------------------------------------------
-    # Prevent employees from creating payroll records
-    # ACL in ir.model.access.csv is the primary guard; this is a
-    # second line of defence in case ACL is misconfigured.
-    # ------------------------------------------------------------------
-    @api.model
-    def create(self, vals):
-        if not self.env.user.has_group('dayflow.group_dayflow_hr_admin'):
-            raise UserError('Only HR/Admin can create payroll records.')
-        return super().create(vals)
+    def unlink(self):
+        if not self.env.user.has_group('dayflow.group_dayflow_hr_admin') and not self.env.su:
+            raise UserError(_('Employees cannot delete payroll records.'))
+        return super().unlink()
+
+    def _audit_salary(self, action):
+        self.env['dayflow.audit.log'].sudo().create({
+            'user_id': self.env.uid,
+            'model_name': self._name,
+            'record_id': self.id,
+            'record_name': self.display_name,
+            'action': action if action in ('confirm', 'update') else 'update',
+            'field_name': 'state',
+            'old_value': '',
+            'new_value': self.state,
+        })

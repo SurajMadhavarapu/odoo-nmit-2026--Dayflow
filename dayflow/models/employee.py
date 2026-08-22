@@ -1,187 +1,198 @@
 # -*- coding: utf-8 -*-
 """
-Dayflow – Employee Model
-Owner: Mani (HR Core)
+Dayflow - Employee Model
+Extends Odoo's hr.employee with all Dayflow-specific HR fields.
 
-Extends Odoo's hr.employee with Dayflow-specific fields.
-This is the CENTRAL entity — all attendance, leave, and payroll records
-reference hr.employee via Many2one.
+INTEGRATION CONTRACT (do not rename without notifying Suraj):
+  _inherit : 'hr.employee'
+  New fields added on hr.employee:
+    df_employee_id         Char   unique employee ID (e.g. DF-001)
+    df_phone               Char   personal phone (employee-editable)
+    df_address             Text   home address   (employee-editable)
+    df_employment_type     Selection  full_time | part_time | contract | intern
+    df_joining_date        Date
+    df_date_of_birth       Date
+    df_gender              Selection  male | female | other | prefer_not_to_say
+    df_emergency_contact   Char
+    df_emergency_phone     Char
+    df_role                Selection  employee | hr_admin
+    df_active              Boolean    Dayflow archive flag (separate from hr active)
 
-INTEGRATION CONTRACT (stable — do not rename without telling Suraj):
-  Base model : hr.employee
-  Canonical Employee ID field : df_employee_id   (Char, unique)
-  Phone field      : df_phone
-  Address field    : df_address
-  Documents        : df_document_ids  → dayflow.employee.document
-  Attendance       : df_attendance_ids → dayflow.attendance  (Kunam owns)
-  Leave            : df_leave_ids     → dayflow.leave.request (Kunam owns)
-  Payroll          : df_payroll_ids   → dayflow.payroll      (Mani owns)
+  Relational back-references (for dashboard widgets):
+    df_attendance_ids      One2many -> dayflow.attendance
+    df_leave_ids           One2many -> dayflow.leave.request
+    df_payroll_ids         One2many -> dayflow.payroll
 """
 
-from odoo import models, fields, api
+from odoo import api, fields, models, _
 from odoo.exceptions import ValidationError
 import re
 
 
 class DayflowEmployee(models.Model):
     _inherit = 'hr.employee'
-    _description = 'Dayflow Employee (extended)'
+    _description = 'Dayflow Employee Extension'
 
     # ------------------------------------------------------------------
-    # Canonical Dayflow Employee ID
+    # Dayflow Identity
     # ------------------------------------------------------------------
     df_employee_id = fields.Char(
-        string='Dayflow Employee ID',
+        string='Employee ID',
         required=True,
         copy=False,
         index=True,
-        help='Unique Dayflow employee code, e.g. DF-001. '
-             'Used as the business-facing identifier across all modules.',
+        help='Unique Dayflow employee identifier, e.g. DF-001',
+    )
+    df_employment_type = fields.Selection(
+        selection=[
+            ('full_time', 'Full-Time'),
+            ('part_time', 'Part-Time'),
+            ('contract', 'Contract'),
+            ('intern', 'Intern'),
+        ],
+        string='Employment Type',
+        default='full_time',
+    )
+    df_joining_date = fields.Date(
+        string='Date of Joining',
+    )
+    df_role = fields.Selection(
+        selection=[
+            ('employee', 'Employee'),
+            ('hr_admin', 'HR / Admin'),
+        ],
+        string='Dayflow Role',
+        default='employee',
+        help='Used for role-based UI routing. Security is enforced via Odoo groups.',
     )
 
     # ------------------------------------------------------------------
-    # Personal / Contact — editable by employee (address, phone, picture)
-    # hr.employee already provides image_1920 for profile picture.
+    # Personal (employee-editable self-service fields)
     # ------------------------------------------------------------------
     df_phone = fields.Char(
-        string='Phone Number',
-        help='Employee editable. Personal mobile/contact number.',
+        string='Personal Phone',
     )
     df_address = fields.Text(
-        string='Address',
-        help='Employee editable. Residential address.',
+        string='Home Address',
     )
-    emergency_contact_name = fields.Char(string='Emergency Contact Name')
-    emergency_contact_phone = fields.Char(string='Emergency Contact Phone')
+    df_date_of_birth = fields.Date(
+        string='Date of Birth',
+        groups='dayflow.group_dayflow_hr_admin',
+    )
+    df_gender = fields.Selection(
+        selection=[
+            ('male', 'Male'),
+            ('female', 'Female'),
+            ('other', 'Other'),
+            ('prefer_not_to_say', 'Prefer not to say'),
+        ],
+        string='Gender',
+        groups='dayflow.group_dayflow_hr_admin',
+    )
+    df_emergency_contact = fields.Char(
+        string='Emergency Contact Name',
+    )
+    df_emergency_phone = fields.Char(
+        string='Emergency Contact Phone',
+    )
 
     # ------------------------------------------------------------------
-    # Job / Employment information
-    # hr.employee already has: job_id, job_title, department_id,
-    #   work_email, work_phone, company_id, parent_id, coach_id
-    # We add what is missing for Dayflow:
+    # Archive / active
     # ------------------------------------------------------------------
-    date_joined = fields.Date(
-        string='Date Joined',
-        help='Date the employee joined the organisation.',
+    df_active = fields.Boolean(
+        string='Dayflow Active',
+        default=True,
+        help='Uncheck to archive. Historical records are preserved.',
     )
-    employment_type = fields.Selection([
-        ('full_time', 'Full Time'),
-        ('part_time', 'Part Time'),
-        ('contract', 'Contract'),
-        ('intern', 'Intern'),
-    ], string='Employment Type', default='full_time')
 
     # ------------------------------------------------------------------
-    # Reverse relations — owned by other modules, exposed here for
-    # the employee record view and dashboards.
-    # Attendance + Leave are Kunam's; Payroll is Mani's.
+    # Back-references (consumed by Kunam and Harshith)
     # ------------------------------------------------------------------
     df_attendance_ids = fields.One2many(
         comodel_name='dayflow.attendance',
         inverse_name='employee_id',
         string='Attendance Records',
-        readonly=True,
     )
     df_leave_ids = fields.One2many(
         comodel_name='dayflow.leave.request',
         inverse_name='employee_id',
         string='Leave Requests',
-        readonly=True,
     )
     df_payroll_ids = fields.One2many(
         comodel_name='dayflow.payroll',
         inverse_name='employee_id',
-        string='Payroll Records',
-        readonly=True,
-    )
-    df_document_ids = fields.One2many(
-        comodel_name='dayflow.employee.document',
-        inverse_name='employee_id',
-        string='Documents',
+        string='Payroll / Salary',
     )
 
     # ------------------------------------------------------------------
-    # Computed counts — useful for smart buttons / dashboards
+    # Computed counts (for dashboard stat buttons)
     # ------------------------------------------------------------------
     df_attendance_count = fields.Integer(
-        string='Attendance Records',
-        compute='_compute_df_attendance_count',
+        string='Attendance Count',
+        compute='_compute_df_counts',
     )
     df_leave_count = fields.Integer(
-        string='Leave Requests',
-        compute='_compute_df_leave_count',
+        string='Leave Count',
+        compute='_compute_df_counts',
     )
 
-    @api.depends('df_attendance_ids')
-    def _compute_df_attendance_count(self):
-        for emp in self:
-            emp.df_attendance_count = len(emp.df_attendance_ids)
-
-    @api.depends('df_leave_ids')
-    def _compute_df_leave_count(self):
-        for emp in self:
-            emp.df_leave_count = len(emp.df_leave_ids)
+    def _compute_df_counts(self):
+        for rec in self:
+            rec.df_attendance_count = len(rec.df_attendance_ids)
+            rec.df_leave_count = len(rec.df_leave_ids)
 
     # ------------------------------------------------------------------
-    # SQL constraint — Dayflow Employee ID must be unique
+    # SQL constraints
     # ------------------------------------------------------------------
     _sql_constraints = [
         (
-            'df_employee_id_unique',
+            'df_employee_id_uniq',
             'UNIQUE(df_employee_id)',
-            'Dayflow Employee ID must be unique.',
+            'Employee ID must be unique across the organisation.',
         ),
     ]
 
     # ------------------------------------------------------------------
-    # Validation
+    # API constraints
     # ------------------------------------------------------------------
-    @api.constrains('df_phone')
-    def _check_df_phone(self):
-        for emp in self:
-            if emp.df_phone and not re.match(r'^\+?[\d\s\-]{7,15}$', emp.df_phone):
+    @api.constrains('df_employee_id')
+    def _check_df_employee_id_format(self):
+        pattern = re.compile(r'^[A-Za-z0-9_\-]+$')
+        for rec in self:
+            if rec.df_employee_id and not pattern.match(rec.df_employee_id):
                 raise ValidationError(
-                    'Phone number "%s" is not valid. '
-                    'Use digits, spaces, hyphens, or a leading +.' % emp.df_phone
+                    _('Employee ID "%s" is invalid. Use only letters, digits, hyphens, or underscores.')
+                    % rec.df_employee_id
                 )
 
-    @api.constrains('date_joined')
-    def _check_date_joined(self):
-        from datetime import date
-        for emp in self:
-            if emp.date_joined and emp.date_joined > date.today():
-                raise ValidationError('Date joined cannot be in the future.')
+    @api.constrains('work_email')
+    def _check_work_email_format(self):
+        pattern = re.compile(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')
+        for rec in self:
+            if rec.work_email and not pattern.match(rec.work_email):
+                raise ValidationError(
+                    _('Work email "%s" does not look valid.') % rec.work_email
+                )
 
-
-class DayflowEmployeeDocument(models.Model):
-    """
-    Employee document store.
-    Employees can upload/view their own documents.
-    HR/Admin can view and manage all documents.
-    """
-    _name = 'dayflow.employee.document'
-    _description = 'Dayflow Employee Document'
-    _order = 'employee_id, document_type'
-
-    employee_id = fields.Many2one(
-        comodel_name='hr.employee',
-        string='Employee',
-        required=True,
-        ondelete='cascade',
-        index=True,
-    )
-    name = fields.Char(
-        string='Document Name',
-        required=True,
-    )
-    document_type = fields.Selection([
-        ('id_proof',      'ID Proof'),
-        ('address_proof', 'Address Proof'),
-        ('certificate',   'Certificate / Degree'),
-        ('contract',      'Employment Contract'),
-        ('other',         'Other'),
-    ], string='Document Type', required=True)
-    file = fields.Binary(string='File', attachment=True)
-    file_name = fields.Char(string='File Name')
-    note = fields.Text(string='Note')
-    active = fields.Boolean(default=True)
+    # ------------------------------------------------------------------
+    # Audit trail on important field changes
+    # ------------------------------------------------------------------
+    def write(self, vals):
+        audited = {'df_employee_id', 'work_email', 'job_id', 'department_id',
+                   'df_employment_type', 'df_role', 'df_active'}
+        for rec in self:
+            for fname in audited & set(vals.keys()):
+                old = rec[fname]
+                if isinstance(old, models.BaseModel):
+                    old = old.display_name
+                self.env['dayflow.audit.log'].sudo().create({
+                    'user_id': self.env.uid,
+                    'model_name': self._name,
+                    'record_id': rec.id,
+                    'record_name': rec.display_name,
+                    'action': 'update',
+                    'field_name': fname,
+                    'old_value': str(old) if old else '',
+                    'new_value': str(vals[fname]),
+                })
+        return super().write(vals)
