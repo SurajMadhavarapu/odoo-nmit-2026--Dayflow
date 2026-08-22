@@ -168,14 +168,27 @@ class DayflowPayroll(models.Model):
         if not self.env.user.has_group('dayflow.group_dayflow_hr_admin'):
             raise UserError('Only HR/Admin users can modify salary records.')
 
-        # Audit any salary-related field changes
-        salary_fields = [
-            'basic_salary', 'house_rent_allowance', 'transport_allowance',
-            'other_allowances', 'tax_deduction', 'provident_fund',
-            'other_deductions', 'net_salary',
+        # Editable source fields that can actually appear in vals.
+        # net_salary / gross_salary / total_deductions are computed+stored fields —
+        # they are NEVER passed in vals; Odoo recomputes them automatically.
+        # Including them here caused: AttributeError: 'dayflow.payroll' object
+        # has no attribute 'net' (cache miss before first compute run).
+        auditable_fields = [
+            'basic_salary',
+            'house_rent_allowance',
+            'transport_allowance',
+            'other_allowances',
+            'tax_deduction',
+            'provident_fund',
+            'other_deductions',
         ]
+
+        # Capture old computed net_salary before the write so we can log the
+        # before/after net change as a summary entry.
+        old_net_by_id = {rec.id: rec.net_salary for rec in self}
+
         for rec in self:
-            for field in salary_fields:
+            for field in auditable_fields:
                 if field in vals:
                     self.env['dayflow.audit.log'].sudo().create({
                         'user_id': self.env.uid,
@@ -187,4 +200,24 @@ class DayflowPayroll(models.Model):
                         'old_value': str(getattr(rec, field)),
                         'new_value': str(vals[field]),
                     })
-        return super().write(vals)
+
+        result = super().write(vals)
+
+        # After write, log the resulting net_salary change if any source field changed.
+        if any(f in vals for f in auditable_fields):
+            for rec in self:
+                new_net = rec.net_salary  # safely read after compute has run
+                old_net = old_net_by_id.get(rec.id, 0.0)
+                if new_net != old_net:
+                    self.env['dayflow.audit.log'].sudo().create({
+                        'user_id': self.env.uid,
+                        'model_name': self._name,
+                        'record_id': rec.id,
+                        'record_name': rec.display_name,
+                        'action': 'salary_update',
+                        'field_name': 'net_salary',
+                        'old_value': str(old_net),
+                        'new_value': str(new_net),
+                    })
+
+        return result

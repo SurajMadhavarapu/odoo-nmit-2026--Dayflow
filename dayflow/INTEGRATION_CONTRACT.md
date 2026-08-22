@@ -143,7 +143,7 @@ Use these in your views with `groups="dayflow.group_dayflow_hr_admin"`.
 | `provident_fund` | Float | |
 | `other_deductions` | Float | |
 | `total_deductions` | Float (computed) | sum of deductions |
-| `net_salary` | Float (computed) | gross - deductions |
+| `net_salary` | Float (computed, stored) | gross - total_deductions. **Read via `rec.net_salary`. Never pass in `write()` vals — Odoo computes it automatically.** |
 | `currency_id` | Many2one → res.currency | defaults to INR |
 
 **Access:**
@@ -223,3 +223,4 @@ salary = request.env['dayflow.payroll'].search([('employee_id.user_id', '=', req
 |------|--------|--------|
 | 2026-08-22 | Mani | Initial models: employee, attendance, leave, payroll, audit_log |
 | 2026-08-22 | Mani | Security groups, ACL, views, demo data |
+| 2026-08-22 | Mani | **fix(payroll):** removed `net_salary` from `write()` audit `salary_fields` list. `net_salary` is a computed+stored field — it is never present in `vals` and reading it before the compute runs caused `AttributeError: 'dayflow.payroll' object has no attribute 'net'`. Fix: audit only writable source fields pre-write; capture old/new net as a post-write summary log entry. |
