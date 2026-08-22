@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 import re
-from odoo import models, fields, api
-from odoo.exceptions import ValidationError
+# pyrefly: ignore [missing-import]
+from odoo import models, fields, api  # type: ignore
+from odoo.exceptions import ValidationError  # type: ignore
 
 class ResUsers(models.Model):
     _inherit = 'res.users'

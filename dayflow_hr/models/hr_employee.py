@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-from odoo import models, fields
+# pyrefly: ignore [missing-import]
+from odoo import models, fields  # type: ignore
 
 class HrEmployee(models.Model):
     _inherit = 'hr.employee'

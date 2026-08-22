@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 import json
-from odoo import http
-from odoo.http import request, Response
-from odoo.exceptions import AccessDenied, ValidationError
+# pyrefly: ignore [missing-import]
+from odoo import http  # type: ignore
+from odoo.http import request, Response  # type: ignore
+from odoo.exceptions import AccessDenied, ValidationError  # type: ignore
 
 class DayflowAuthController(http.Controller):
 
