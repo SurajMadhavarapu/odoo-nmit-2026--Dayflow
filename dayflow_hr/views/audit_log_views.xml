@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Dayflow Audit Log Views
+    Owner: Mani
+    Read-only for HR Admin.
+-->
+<odoo>
+
+    <record id="view_dayflow_audit_log_tree" model="ir.ui.view">
+        <field name="name">dayflow.audit.log.tree</field>
+        <field name="model">dayflow.audit.log</field>
+        <field name="arch" type="xml">
+            <tree string="Audit Log" create="false" delete="false">
+                <field name="timestamp"/>
+                <field name="user_id"/>
+                <field name="model_name"/>
+                <field name="record_ref"/>
+                <field name="action"/>
+                <field name="field_name"/>
+                <field name="old_value"/>
+                <field name="new_value"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_dayflow_audit_log_search" model="ir.ui.view">
+        <field name="name">dayflow.audit.log.search</field>
+        <field name="model">dayflow.audit.log</field>
+        <field name="arch" type="xml">
+            <search string="Search Audit Log">
+                <field name="user_id"/>
+                <field name="model_name"/>
+                <field name="action"/>
+                <group expand="0" string="Group By">
+                    <filter string="User"   name="grp_user"   context="{'group_by': 'user_id'}"/>
+                    <filter string="Model"  name="grp_model"  context="{'group_by': 'model_name'}"/>
+                    <filter string="Action" name="grp_action" context="{'group_by': 'action'}"/>
+                    <filter string="Date"   name="grp_date"   context="{'group_by': 'timestamp:day'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_dayflow_audit_log" model="ir.actions.act_window">
+        <field name="name">HR Audit Log</field>
+        <field name="res_model">dayflow.audit.log</field>
+        <field name="view_mode">tree</field>
+        <field name="search_view_id" ref="view_dayflow_audit_log_search"/>
+        <field name="groups_id" eval="[(4, ref('dayflow_hr.group_dayflow_hr_admin'))]"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No audit entries yet.</p>
+        </field>
+    </record>
+
+</odoo>

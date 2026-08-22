@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Dayflow Payroll Views — Odoo 17 compatible
+    Owner: Mani
+    Employees: read-only view of own payroll.
+    HR Admin: full form with confirm/paid workflow.
+-->
+<odoo>
+
+    <!-- ── Tree view ── -->
+    <record id="view_dayflow_payroll_tree" model="ir.ui.view">
+        <field name="name">dayflow.payroll.tree</field>
+        <field name="model">dayflow.payroll</field>
+        <field name="arch" type="xml">
+            <tree string="Payroll"
+                  decoration-success="state == 'paid'"
+                  decoration-warning="state == 'confirmed'"
+                  decoration-muted="state == 'draft'">
+                <field name="employee_id"/>
+                <field name="pay_period"/>
+                <field name="basic_salary"/>
+                <field name="gross_salary"/>
+                <field name="total_deductions"/>
+                <field name="net_salary"/>
+                <field name="state"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- ── Form view ── -->
+    <record id="view_dayflow_payroll_form" model="ir.ui.view">
+        <field name="name">dayflow.payroll.form</field>
+        <field name="model">dayflow.payroll</field>
+        <field name="arch" type="xml">
+            <form string="Payroll Record">
+                <header>
+                    <button name="action_confirm"
+                            string="Confirm"
+                            type="object"
+                            class="btn-primary"
+                            groups="dayflow_hr.group_dayflow_hr_admin"
+                            invisible="state != 'draft'"/>
+                    <button name="action_mark_paid"
+                            string="Mark as Paid"
+                            type="object"
+                            class="btn-success"
+                            groups="dayflow_hr.group_dayflow_hr_admin"
+                            invisible="state != 'confirmed'"/>
+                    <button name="action_reset_draft"
+                            string="Reset to Draft"
+                            type="object"
+                            groups="dayflow_hr.group_dayflow_hr_admin"
+                            invisible="state == 'draft'"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,confirmed,paid"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group string="Header">
+                            <field name="employee_id"
+                                   readonly="state != 'draft'"/>
+                            <field name="pay_period"
+                                   readonly="state != 'draft'"/>
+                            <field name="currency_id"
+                                   readonly="state != 'draft'"
+                                   groups="dayflow_hr.group_dayflow_hr_admin"/>
+                        </group>
+                    </group>
+                    <!-- Earnings: HR Admin editable; employees see read-only -->
+                    <group string="Earnings"
+                           groups="dayflow_hr.group_dayflow_hr_admin">
+                        <field name="basic_salary"/>
+                        <field name="house_rent_allowance"/>
+                        <field name="transport_allowance"/>
+                        <field name="other_allowances"/>
+                        <field name="gross_salary" readonly="1"/>
+                    </group>
+                    <!-- Deductions: HR Admin editable -->
+                    <group string="Deductions"
+                           groups="dayflow_hr.group_dayflow_hr_admin">
+                        <field name="provident_fund"/>
+                        <field name="tax_deduction"/>
+                        <field name="other_deductions"/>
+                        <field name="total_deductions" readonly="1"/>
+                    </group>
+                    <group string="Net">
+                        <field name="net_salary" readonly="1"/>
+                    </group>
+                    <group string="Notes"
+                           groups="dayflow_hr.group_dayflow_hr_admin">
+                        <field name="notes" nolabel="1"/>
+                    </group>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- ── Search view ── -->
+    <record id="view_dayflow_payroll_search" model="ir.ui.view">
+        <field name="name">dayflow.payroll.search</field>
+        <field name="model">dayflow.payroll</field>
+        <field name="arch" type="xml">
+            <search string="Search Payroll">
+                <field name="employee_id"/>
+                <field name="pay_period"/>
+                <filter string="My Payroll"
+                        name="my_payroll"
+                        domain="[('employee_id.user_id', '=', uid)]"/>
+                <separator/>
+                <filter string="Draft"     name="draft"     domain="[('state', '=', 'draft')]"/>
+                <filter string="Confirmed" name="confirmed" domain="[('state', '=', 'confirmed')]"/>
+                <filter string="Paid"      name="paid"      domain="[('state', '=', 'paid')]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Employee"   name="grp_employee"   context="{'group_by': 'employee_id'}"/>
+                    <filter string="Pay Period" name="grp_pay_period" context="{'group_by': 'pay_period'}"/>
+                    <filter string="Status"     name="grp_state"      context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ── Window action ── -->
+    <record id="action_dayflow_payroll" model="ir.actions.act_window">
+        <field name="name">Payroll</field>
+        <field name="res_model">dayflow.payroll</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_dayflow_payroll_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No payroll records yet.
+            </p>
+        </field>
+    </record>
+
+</odoo>

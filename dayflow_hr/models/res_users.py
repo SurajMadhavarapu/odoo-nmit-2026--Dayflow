@@ -109,7 +109,6 @@ class ResUsers(models.Model):
                 'user_id': new_user.id,
                 'work_email': user_email,
                 'employee_code': emp_code,
-                'barcode': emp_code,
                 'identification_id': emp_code,
                 'company_id': main_company.id if main_company else False,
             }
@@ -117,7 +116,6 @@ class ResUsers(models.Model):
         else:
             employee.sudo().write({
                 'employee_code': emp_code,
-                'barcode': emp_code,
                 'identification_id': emp_code,
                 'work_email': user_email,
             })

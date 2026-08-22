@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Dayflow Top-Level Menu
+    Owner: Mani
+    Harshith: replace or extend action_dayflow_main_dashboard with your dashboard action.
+-->
+<odoo>
+
+    <!-- ── Root menu ── -->
+    <menuitem id="menu_dayflow_root"
+              name="Dayflow HRMS"
+              sequence="10"/>
+
+    <!-- ── Employees ── -->
+    <menuitem id="menu_dayflow_employees"
+              name="Employees"
+              parent="menu_dayflow_root"
+              action="hr.open_view_employee_list_my"
+              groups="dayflow_hr.group_dayflow_employee"
+              sequence="10"/>
+
+    <!-- ── Attendance ── -->
+    <menuitem id="menu_dayflow_attendance"
+              name="Attendance"
+              parent="menu_dayflow_root"
+              action="dayflow_hr.action_dayflow_attendance"
+              groups="dayflow_hr.group_dayflow_employee"
+              sequence="20"/>
+
+    <!-- ── Leave ── -->
+    <menuitem id="menu_dayflow_leave"
+              name="Leave Requests"
+              parent="menu_dayflow_root"
+              action="dayflow_hr.action_dayflow_leave"
+              groups="dayflow_hr.group_dayflow_employee"
+              sequence="30"/>
+
+    <!-- ── Payroll ── -->
+    <menuitem id="menu_dayflow_payroll"
+              name="Payroll"
+              parent="menu_dayflow_root"
+              action="dayflow_hr.action_dayflow_payroll"
+              groups="dayflow_hr.group_dayflow_employee"
+              sequence="40"/>
+
+    <!-- ── HR Admin section ── -->
+    <menuitem id="menu_dayflow_admin"
+              name="HR Management"
+              parent="menu_dayflow_root"
+              groups="dayflow_hr.group_dayflow_hr_admin"
+              sequence="90"/>
+
+    <menuitem id="menu_dayflow_admin_employees"
+              name="All Employees"
+              parent="menu_dayflow_admin"
+              action="hr.open_view_employee_list_my"
+              groups="dayflow_hr.group_dayflow_hr_admin"
+              sequence="10"/>
+
+    <menuitem id="menu_dayflow_admin_attendance"
+              name="All Attendance"
+              parent="menu_dayflow_admin"
+              action="dayflow_hr.action_dayflow_attendance"
+              groups="dayflow_hr.group_dayflow_hr_admin"
+              sequence="20"/>
+
+    <menuitem id="menu_dayflow_admin_leave"
+              name="Leave Approvals"
+              parent="menu_dayflow_admin"
+              action="dayflow_hr.action_dayflow_leave"
+              groups="dayflow_hr.group_dayflow_hr_admin"
+              sequence="30"/>
+
+    <menuitem id="menu_dayflow_admin_payroll"
+              name="Payroll Management"
+              parent="menu_dayflow_admin"
+              action="dayflow_hr.action_dayflow_payroll"
+              groups="dayflow_hr.group_dayflow_hr_admin"
+              sequence="40"/>
+
+    <menuitem id="menu_dayflow_admin_audit"
+              name="Audit Log"
+              parent="menu_dayflow_admin"
+              action="dayflow_hr.action_dayflow_audit_log"
+              groups="dayflow_hr.group_dayflow_hr_admin"
+              sequence="50"/>
+
+</odoo>
