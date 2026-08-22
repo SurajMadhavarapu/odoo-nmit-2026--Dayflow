@@ -1,13 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
     Dayflow Security Groups and Record Rules
-    Owner: Mani (HR Core) — groups definition
-    Note: Authentication architecture is owned by Suraj.
-          Do not create competing auth/user mechanisms here.
+    Owner: Mani (HR Core)
 
-    CANONICAL GROUP NAMES (do not change without telling Suraj):
+    CANONICAL GROUP XML IDs (do not rename without notifying Suraj + teammates):
       dayflow.group_dayflow_employee   — regular employees
       dayflow.group_dayflow_hr_admin   — HR officers and admins
+
+    Record rule naming convention:
+      Odoo auto-generates model external IDs as:
+        model_<model_name_with_underscores>
+      e.g.  dayflow.attendance  →  dayflow.model_dayflow_attendance
+            dayflow.leave.request → dayflow.model_dayflow_leave_request
+            dayflow.payroll       → dayflow.model_dayflow_payroll
+            dayflow.audit.log     → dayflow.model_dayflow_audit_log
+      For hr.employee (from hr module): hr.model_hr_employee
 -->
 <odoo>
     <data noupdate="1">
@@ -25,16 +32,16 @@
              SECURITY GROUPS
         ============================================================ -->
 
-        <!-- Regular employee — view own data, apply leave, check in/out -->
+        <!-- Employee group — base access -->
         <record id="group_dayflow_employee" model="res.groups">
             <field name="name">Employee</field>
             <field name="category_id" ref="module_category_dayflow"/>
             <field name="comment">
-                View own profile, attendance, apply for leave, view own salary.
+                View own profile and attendance, apply for leave, view own salary.
             </field>
         </record>
 
-        <!-- HR / Admin — inherits employee permissions automatically -->
+        <!-- HR Admin group — inherits all employee permissions -->
         <record id="group_dayflow_hr_admin" model="res.groups">
             <field name="name">HR / Admin</field>
             <field name="category_id" ref="module_category_dayflow"/>
@@ -46,20 +53,15 @@
 
         <!-- ============================================================
              RECORD RULES — row-level security
-
-             Pattern:
-               employee rule  → filters to own records only
-               hr_admin rule  → sees all records (domain 1=1)
-
-             These rules are additive when a user is in multiple groups.
-             HR/Admin inherits employee group, so they match both rules;
-             the broader hr_admin rule takes effect.
+             Employee rules: filter to own records.
+             HR Admin rules: domain 1=1 (see everything).
+             HR Admin inherits employee group, so both rules apply;
+             the broader HR Admin rule takes precedence.
         ============================================================ -->
 
-        <!-- ──────────────── EMPLOYEE (hr.employee) ──────────────── -->
-        <!-- Employees can only read/edit their own hr.employee record -->
-        <record id="rule_employee_own_profile" model="ir.rule">
-            <field name="name">Dayflow Employee: own profile only</field>
+        <!-- ──────────────── hr.employee ──────────────── -->
+        <record id="rule_employee_own_profile_read" model="ir.rule">
+            <field name="name">Dayflow Employee: read own profile</field>
             <field name="model_id" ref="hr.model_hr_employee"/>
             <field name="domain_force">[('user_id', '=', user.id)]</field>
             <field name="groups" eval="[(4, ref('group_dayflow_employee'))]"/>
@@ -69,8 +71,8 @@
             <field name="perm_unlink" eval="False"/>
         </record>
 
-        <record id="rule_employee_hr_all" model="ir.rule">
-            <field name="name">Dayflow Employee: HR sees all</field>
+        <record id="rule_employee_hr_admin_all" model="ir.rule">
+            <field name="name">Dayflow HR Admin: all employee profiles</field>
             <field name="model_id" ref="hr.model_hr_employee"/>
             <field name="domain_force">[(1, '=', 1)]</field>
             <field name="groups" eval="[(4, ref('group_dayflow_hr_admin'))]"/>
@@ -80,10 +82,10 @@
             <field name="perm_unlink" eval="False"/>
         </record>
 
-        <!-- ──────────────── ATTENDANCE ──────────────── -->
+        <!-- ──────────────── dayflow.attendance ──────────────── -->
         <record id="rule_attendance_employee_own" model="ir.rule">
             <field name="name">Dayflow Attendance: employee sees own</field>
-            <field name="model_id" ref="model_dayflow_attendance"/>
+            <field name="model_id" ref="dayflow.model_dayflow_attendance"/>
             <field name="domain_force">[('employee_id.user_id', '=', user.id)]</field>
             <field name="groups" eval="[(4, ref('group_dayflow_employee'))]"/>
             <field name="perm_read"   eval="True"/>
@@ -92,9 +94,9 @@
             <field name="perm_unlink" eval="False"/>
         </record>
 
-        <record id="rule_attendance_hr_all" model="ir.rule">
-            <field name="name">Dayflow Attendance: HR sees all</field>
-            <field name="model_id" ref="model_dayflow_attendance"/>
+        <record id="rule_attendance_hr_admin_all" model="ir.rule">
+            <field name="name">Dayflow Attendance: HR Admin sees all</field>
+            <field name="model_id" ref="dayflow.model_dayflow_attendance"/>
             <field name="domain_force">[(1, '=', 1)]</field>
             <field name="groups" eval="[(4, ref('group_dayflow_hr_admin'))]"/>
             <field name="perm_read"   eval="True"/>
@@ -103,10 +105,10 @@
             <field name="perm_unlink" eval="True"/>
         </record>
 
-        <!-- ──────────────── LEAVE REQUEST ──────────────── -->
+        <!-- ──────────────── dayflow.leave.request ──────────────── -->
         <record id="rule_leave_employee_own" model="ir.rule">
             <field name="name">Dayflow Leave: employee sees own requests</field>
-            <field name="model_id" ref="model_dayflow_leave_request"/>
+            <field name="model_id" ref="dayflow.model_dayflow_leave_request"/>
             <field name="domain_force">[('employee_id.user_id', '=', user.id)]</field>
             <field name="groups" eval="[(4, ref('group_dayflow_employee'))]"/>
             <field name="perm_read"   eval="True"/>
@@ -115,9 +117,9 @@
             <field name="perm_unlink" eval="False"/>
         </record>
 
-        <record id="rule_leave_hr_all" model="ir.rule">
-            <field name="name">Dayflow Leave: HR sees all requests</field>
-            <field name="model_id" ref="model_dayflow_leave_request"/>
+        <record id="rule_leave_hr_admin_all" model="ir.rule">
+            <field name="name">Dayflow Leave: HR Admin sees all requests</field>
+            <field name="model_id" ref="dayflow.model_dayflow_leave_request"/>
             <field name="domain_force">[(1, '=', 1)]</field>
             <field name="groups" eval="[(4, ref('group_dayflow_hr_admin'))]"/>
             <field name="perm_read"   eval="True"/>
@@ -126,11 +128,11 @@
             <field name="perm_unlink" eval="True"/>
         </record>
 
-        <!-- ──────────────── PAYROLL ──────────────── -->
-        <!-- Employees: read own payroll, NO write/create/delete -->
-        <record id="rule_payroll_employee_own" model="ir.rule">
+        <!-- ──────────────── dayflow.payroll ──────────────── -->
+        <!-- Employee: read-only on own record; no write/create/delete -->
+        <record id="rule_payroll_employee_own_readonly" model="ir.rule">
             <field name="name">Dayflow Payroll: employee reads own</field>
-            <field name="model_id" ref="model_dayflow_payroll"/>
+            <field name="model_id" ref="dayflow.model_dayflow_payroll"/>
             <field name="domain_force">[('employee_id.user_id', '=', user.id)]</field>
             <field name="groups" eval="[(4, ref('group_dayflow_employee'))]"/>
             <field name="perm_read"   eval="True"/>
@@ -139,9 +141,9 @@
             <field name="perm_unlink" eval="False"/>
         </record>
 
-        <record id="rule_payroll_hr_all" model="ir.rule">
-            <field name="name">Dayflow Payroll: HR manages all</field>
-            <field name="model_id" ref="model_dayflow_payroll"/>
+        <record id="rule_payroll_hr_admin_all" model="ir.rule">
+            <field name="name">Dayflow Payroll: HR Admin manages all</field>
+            <field name="model_id" ref="dayflow.model_dayflow_payroll"/>
             <field name="domain_force">[(1, '=', 1)]</field>
             <field name="groups" eval="[(4, ref('group_dayflow_hr_admin'))]"/>
             <field name="perm_read"   eval="True"/>
@@ -150,11 +152,11 @@
             <field name="perm_unlink" eval="True"/>
         </record>
 
-        <!-- ──────────────── AUDIT LOG ──────────────── -->
-        <!-- Strictly read-only; only HR/Admin can see it; no employee access -->
-        <record id="rule_audit_hr_readonly" model="ir.rule">
-            <field name="name">Dayflow Audit Log: HR read-only</field>
-            <field name="model_id" ref="model_dayflow_audit_log"/>
+        <!-- ──────────────── dayflow.audit.log ──────────────── -->
+        <!-- Employees: no access at all (not listed in ACL CSV either) -->
+        <record id="rule_audit_log_hr_admin_readonly" model="ir.rule">
+            <field name="name">Dayflow Audit Log: HR Admin read-only</field>
+            <field name="model_id" ref="dayflow.model_dayflow_audit_log"/>
             <field name="domain_force">[(1, '=', 1)]</field>
             <field name="groups" eval="[(4, ref('group_dayflow_hr_admin'))]"/>
             <field name="perm_read"   eval="True"/>
