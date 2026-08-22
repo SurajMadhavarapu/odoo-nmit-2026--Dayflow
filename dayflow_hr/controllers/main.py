@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
+import json
 from odoo import http
-from odoo.http import request
+from odoo.http import request, Response
 from odoo.exceptions import AccessDenied, ValidationError
 
 class DayflowAuthController(http.Controller):
@@ -12,7 +13,7 @@ class DayflowAuthController(http.Controller):
         Endpoint: POST /dayflow/auth/register
         Payload: { "employee_id": "EMP001", "email": "user@example.com", "password": "SecretPassword123", "role": "Employee", "name": "John Doe" }
         """
-        data = request.jsonrequest or kwargs
+        data = kwargs or getattr(request, 'params', {}) or {}
         employee_id = data.get('employee_id')
         email = data.get('email')
         password = data.get('password')
@@ -40,7 +41,7 @@ class DayflowAuthController(http.Controller):
         Endpoint: POST /dayflow/auth/login
         Payload: { "login": "user@example.com", "password": "SecretPassword123" }
         """
-        data = request.jsonrequest or kwargs
+        data = kwargs or getattr(request, 'params', {}) or {}
         login = data.get('login') or data.get('email')
         password = data.get('password')
 
@@ -128,3 +129,13 @@ class DayflowAuthController(http.Controller):
             'employee_id': employee.id if employee else False,
             'employee_code': employee.employee_code if employee else False,
         }
+
+    # =========================================================================
+    # WEB UI ROUTE - Serves Dayflow HRMS Frontend Single Page Application (SPA)
+    # =========================================================================
+    @http.route(['/', '/dayflow/app', '/dayflow/login'], type='http', auth='none', website=True)
+    def render_app(self, **kwargs):
+        """
+        Serves the Dayflow HRMS Single Page Application UI.
+        """
+        return request.render('dayflow_hr.dayflow_app_template', {})
