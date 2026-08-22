@@ -1,2 +1,2 @@
-# odoo-nmit-2026--SurajMadhavarapu
+# odoo-nmit-2026--Dayflow
 Team repository for the Odoo × NMIT Bangalore Hackathon 2026 — collaborative development, documentation, and implementation of our hackathon solution.
