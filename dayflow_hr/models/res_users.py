@@ -74,7 +74,7 @@ class ResUsers(models.Model):
         if existing_emp:
             raise ValidationError(f"An employee with Employee ID '{emp_code}' already exists.")
 
-        # 3. Security Group Determination
+        # 3. Security Group Determination & Main Company
         emp_group = self.env.ref('dayflow_hr.group_dayflow_employee')
         admin_group = self.env.ref('dayflow_hr.group_dayflow_hr_admin')
         base_group = self.env.ref('base.group_user')
@@ -85,6 +85,8 @@ class ResUsers(models.Model):
 
         user_name = name.strip() if name and str(name).strip() else user_email.split('@')[0].replace('.', ' ').title()
 
+        main_company = self.env.ref('base.main_company', raise_if_not_found=False) or self.env['res.company'].sudo().search([], limit=1)
+
         # 4. User Creation (Odoo native password hashing via res.users)
         user_vals = {
             'name': user_name,
@@ -92,10 +94,11 @@ class ResUsers(models.Model):
             'email': user_email,
             'password': raw_password,
             'groups_id': groups,
+            'company_id': main_company.id if main_company else False,
+            'company_ids': [(4, main_company.id)] if main_company else False,
             'active': True,
         }
         new_user = self.sudo().create(user_vals)
-        new_user.sudo().write({'password': raw_password})
 
         # 5. Linked HR Employee Profile Creation / Verification
         employee = self.env['hr.employee'].sudo().search([('user_id', '=', new_user.id)], limit=1)
@@ -107,6 +110,7 @@ class ResUsers(models.Model):
                 'employee_code': emp_code,
                 'barcode': emp_code,
                 'identification_id': emp_code,
+                'company_id': main_company.id if main_company else False,
             }
             employee = self.env['hr.employee'].sudo().create(emp_vals)
         else:

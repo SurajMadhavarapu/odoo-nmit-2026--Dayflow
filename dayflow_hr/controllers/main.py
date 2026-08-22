@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
+import json
 from odoo import http
-from odoo.http import request
+from odoo.http import request, Response
 from odoo.exceptions import AccessDenied, ValidationError
 
 class DayflowAuthController(http.Controller):
@@ -12,7 +13,7 @@ class DayflowAuthController(http.Controller):
         Endpoint: POST /dayflow/auth/register
         Payload: { "employee_id": "EMP001", "email": "user@example.com", "password": "SecretPassword123", "role": "Employee", "name": "John Doe" }
         """
-        data = request.jsonrequest or kwargs
+        data = kwargs or getattr(request, 'params', {}) or {}
         employee_id = data.get('employee_id')
         email = data.get('email')
         password = data.get('password')
@@ -27,11 +28,14 @@ class DayflowAuthController(http.Controller):
                 role=role,
                 name=name
             )
+            request.env.cr.commit()
             return res
         except ValidationError as e:
+            request.env.cr.rollback()
             return {'status': 'error', 'code': 'validation_error', 'message': str(e)}
         except Exception as e:
-            return {'status': 'error', 'code': 'server_error', 'message': 'Registration failed. Please verify user details.'}
+            request.env.cr.rollback()
+            return {'status': 'error', 'code': 'server_error', 'message': f'Registration failed: {str(e)}'}
 
     @http.route(['/dayflow/auth/login', '/api/dayflow/login'], type='json', auth='none', methods=['POST'], csrf=False)
     def login(self, **kwargs):
@@ -40,7 +44,7 @@ class DayflowAuthController(http.Controller):
         Endpoint: POST /dayflow/auth/login
         Payload: { "login": "user@example.com", "password": "SecretPassword123" }
         """
-        data = request.jsonrequest or kwargs
+        data = kwargs or getattr(request, 'params', {}) or {}
         login = data.get('login') or data.get('email')
         password = data.get('password')
 
@@ -53,7 +57,7 @@ class DayflowAuthController(http.Controller):
             if not uid:
                 return {'status': 'error', 'code': 'invalid_credentials', 'message': 'Invalid email/login or password.'}
 
-            user = request.env['res.users'].browse(uid)
+            user = request.env['res.users'].sudo().browse(uid)
             if not user.active:
                 return {'status': 'error', 'code': 'inactive_user', 'message': 'User account is inactive.'}
 
@@ -81,8 +85,10 @@ class DayflowAuthController(http.Controller):
                 'employee_code': employee.employee_code if employee else False,
             }
         except AccessDenied:
+            request.env.cr.rollback()
             return {'status': 'error', 'code': 'invalid_credentials', 'message': 'Invalid email/login or password.'}
         except Exception as e:
+            request.env.cr.rollback()
             return {'status': 'error', 'code': 'auth_failed', 'message': 'Authentication failed.'}
 
     @http.route('/dayflow/auth/logout', type='json', auth='user', methods=['POST'], csrf=False)
@@ -128,3 +134,13 @@ class DayflowAuthController(http.Controller):
             'employee_id': employee.id if employee else False,
             'employee_code': employee.employee_code if employee else False,
         }
+
+    # =========================================================================
+    # WEB UI ROUTE - Serves Dayflow HRMS Frontend Single Page Application (SPA)
+    # =========================================================================
+    @http.route(['/', '/dayflow/app', '/dayflow/login'], type='http', auth='none', website=True)
+    def render_app(self, **kwargs):
+        """
+        Serves the Dayflow HRMS Single Page Application UI.
+        """
+        return request.render('dayflow_hr.dayflow_app_template', {})

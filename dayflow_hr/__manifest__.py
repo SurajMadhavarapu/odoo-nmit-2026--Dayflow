@@ -20,6 +20,7 @@ Human Resource Management System covering Employee Management, Attendance, Leave
     'data': [
         'security/hr_security.xml',
         'security/ir.model.access.csv',
+        'views/app_templates.xml',
     ],
     'installable': True,
     'application': True,
