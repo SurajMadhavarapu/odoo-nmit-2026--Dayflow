@@ -1,6 +1,6 @@
 # Dayflow HRMS — Team Integration Contract
 
-**Version:** 1.0.0  
+**Version:** 1.1.0 (Runtime Verified - Odoo 17.0)  
 **Owner:** Suraj (Authentication + Architecture + Integration)  
 **Target Module:** `dayflow_hr`  
 
@@ -18,54 +18,58 @@
 
 | Area / Module | Lead | Core Odoo Models / Files | Responsibilities |
 | :--- | :--- | :--- | :--- |
-| **Authentication & Architecture** | Suraj | `res.users`, `security/hr_security.xml`, `__manifest__.py` | User auth contract, Security Groups, Record Rules integration, Architecture integrity |
+| **Authentication & Architecture** | Suraj | `res.users`, `security/hr_security.xml`, `security/ir.model.access.csv`, `controllers/main.py` | User auth contract, Security Groups, Record Rules integration, Registration & Session APIs |
 | **Employee & Payroll** | Mani | `hr.employee`, `hr.payslip`, `hr.contract` | Employee profile extensions, Employee ID generation, Payroll computation & payslips |
 | **Attendance & Leave** | Kunam | `hr.attendance`, `hr.leave` | Check-in/out logic, work hour calculation, Leave request state transitions & balances |
 | **Dashboards & UI/UX** | Harshith | `ir.ui.view`, QWeb templates, Kanban/Form/Tree views | Front-end Odoo views, Dashboard widgets, styling, and user experience |
 
 ---
 
-## 3. User ↔ Employee Identity Mapping
+## 3. Verified User ↔ Employee Identity Mapping
 
 ```text
-res.users (Authentication Identity)
+res.users (Authentication Identity - Odoo Core)
     │  (1-to-1 link via user_id)
     ▼
-hr.employee (HR Profile Entity)
+hr.employee (HR Profile Entity - Odoo Core + Dayflow Extensions)
     │
-    ├── hr.attendance (Attendance Logs)
-    ├── hr.leave (Leave Requests)
-    └── hr.payslip (Payroll / Salary Statements)
+    ├── hr.attendance (Attendance Logs - Owned by Kunam)
+    ├── hr.leave (Leave Requests - Owned by Kunam)
+    └── hr.payslip (Payroll / Salary Statements - Owned by Mani)
 ```
 
-* **Sign Up Flow (Design):**
-  Inputs: `[Employee ID, Work Email, Password, Role]` → Creates Odoo `res.users` record → Links/Instantiates `hr.employee` record.
-* **Sign In Flow (Design):**
-  Credentials: `[Email/Login, Password]` → Odoo `res.users` authentication → Security Group verification (`group_dayflow_employee` vs `group_dayflow_hr_admin`) → Interface layout.
+* **Authentication Fields (`res.users`):**
+  * `login`: User email / login string (Unique)
+  * `password`: Native password hash (Managed by `res.users`)
+  * `dayflow_role`: Computed selection (`'employee'` vs `'hr_admin'`)
+* **Employee Identity Fields (`hr.employee`):**
+  * `user_id`: Many2one reference to `res.users`
+  * `employee_code`: Char field for Dayflow Employee ID (Unique, `index=True`)
+  * `work_email`: Work Email address string
 
 ---
 
-## 4. Canonical Employee Identifier Contract
+## 4. Registration & Authentication APIs
 
-* **Primary Key Reference:** Every module (Attendance, Leave, Payroll, Dashboards) **MUST** reference the employee using a standard Many2one field pointing to `hr.employee`:
+* **Server-side Helper (Python):**
   ```python
-  employee_id = fields.Many2one('hr.employee', string='Employee', required=True, ondelete='cascade')
+  env['res.users'].register_dayflow_user(employee_id, email, password, role, name=None)
   ```
-* **Employee Identifier Field:** Canonical string identifier (`employee_id` field on `hr.employee` model, managed by Mani).
-* **Odoo Runtime Verification:** *"To be finalized after Odoo runtime verification."* (Standard Odoo field name `employee_id` / `x_employee_id`).
+* **JSON HTTP Endpoints:**
+  * `POST /api/dayflow/signup`: `{ "employee_id": "EMP001", "email": "user@example.com", "password": "Pass", "role": "Employee", "name": "Name" }`
+  * `POST /api/dayflow/login`: `{ "login": "user@example.com", "password": "Pass" }`
+  * `GET/POST /api/dayflow/session`: Returns current session user status, Dayflow role, and linked employee ID.
 
 ---
 
-## 5. Security & Role Contract
+## 5. Security Groups & Record Rules
 
-Defined Security Groups in [`dayflow_hr/security/hr_security.xml`](file:///c:/Users/suraj/Documents/odoo-nmit-2026--Dayflow/dayflow_hr/security/hr_security.xml):
-
-1. **`group_dayflow_employee` (Employee Role):**
-   * **Scope:** Access restricted to user's OWN profile, OWN attendance records, OWN leave requests, and OWN payslips.
-   * **Record Rule Contract:** `[('employee_id.user_id', '=', user.id)]`
-2. **`group_dayflow_hr_admin` (HR / Admin Role):**
-   * **Scope:** Administrative access across ALL employees, attendance logs, leave approvals/refusals, and payroll generation.
-   * **Inheritance:** Inherits `group_dayflow_employee`.
+* **Security Group XML IDs:**
+  * `dayflow_hr.group_dayflow_employee` (**Employee Role**)
+  * `dayflow_hr.group_dayflow_hr_admin` (**HR / Admin Role**)
+* **Record Rules (`ir.rule`):**
+  * `dayflow_hr.hr_employee_rule_dayflow_employee`: Restricts Employee profile access domain to `[('user_id', '=', user.id)]`.
+  * `dayflow_hr.hr_employee_rule_dayflow_hr_admin`: Grants HR/Admin unrestricted profile access domain `[(1, '=', 1)]`.
 
 ---
 
@@ -74,16 +78,12 @@ Defined Security Groups in [`dayflow_hr/security/hr_security.xml`](file:///c:/Us
 ### ✅ DO:
 * **Reference `hr.employee` directly:**
   ```python
-  # In Attendance / Leave / Payroll models:
   employee_id = fields.Many2one('hr.employee', string='Employee', required=True)
   ```
-* **Use existing Security Groups:**
-  Reference `dayflow_hr.group_dayflow_employee` or `dayflow_hr.group_dayflow_hr_admin` in view files and access definitions.
-* **Filter records by `user_id` / `employee_id`:**
-  Enforce record privacy via ORM domain filters and record rules.
+* **Reference Dayflow Security Groups:**
+  Use `dayflow_hr.group_dayflow_employee` or `dayflow_hr.group_dayflow_hr_admin` in view files and access definitions.
 
 ### ❌ DO NOT:
 * **DO NOT** create a custom `User` table or custom `Employee` table.
-* **DO NOT** store employee IDs as plain unindexed text strings (`custom_employee_id = fields.Char(...)`) in Attendance, Leave, or Payroll.
+* **DO NOT** store employee IDs as plain unindexed text strings (`custom_id = fields.Char(...)`) in Attendance, Leave, or Payroll.
 * **DO NOT** create separate login/signup databases or JWT authentication controllers.
-* **DO NOT** define new role strings outside `group_dayflow_employee` and `group_dayflow_hr_admin`.
