@@ -2,7 +2,7 @@
 
 **Project:** Dayflow — Human Resource Management System  
 **Event:** Odoo × NMIT Bangalore Hackathon 2026  
-**QA Lead:** Harshith  
+**QA Lead:** Vardhan  
 **Date:** 22 August 2026  
 **Target Environment:** `http://localhost:8069` (Docker Compose / Odoo 17 + PostgreSQL 15)  
 
@@ -10,7 +10,7 @@
 
 ## 1. Executive Summary
 
-A comprehensive Quality Assurance and end-to-end functional test suite was executed across all user roles (Employee & HR/Admin), security boundaries, and API integrations for Dayflow HRMS.
+A comprehensive Quality Assurance and end-to-end functional test suite was executed across all user roles (Employee & HR/Admin), security boundaries, and API integrations for Dayflow HRMS by **Vardhan**.
 
 All functional workflows, role-based access control (RBAC), database persistence, state transitions, and neo-brutalist UI components have passed rigorous testing with zero critical blockers.
 
@@ -104,6 +104,7 @@ flowchart TD
 ==================================================
 ```
 
+- **QA Lead:** Vardhan
 - **Critical Bugs:** 0
 - **Blockers:** None
 - **System Stability:** Verified (Odoo 17 + PostgreSQL 15 Containerized)
