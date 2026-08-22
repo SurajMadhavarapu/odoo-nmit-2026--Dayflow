@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- ============================================================
+             EMPLOYEE — Form View (extends hr.employee)
+             ============================================================ -->
+        <record id="view_dayflow_employee_form" model="ir.ui.view">
+            <field name="name">dayflow.employee.form</field>
+            <field name="model">hr.employee</field>
+            <field name="inherit_id" ref="hr.view_employee_form"/>
+            <field name="arch" type="xml">
+                <!-- Inject Dayflow tab after the main Work Information tab -->
+                <xpath expr="//notebook" position="inside">
+                    <page string="Dayflow Info" name="dayflow_info">
+                        <group string="Employee Identification">
+                            <field name="dayflow_employee_id"
+                                   attrs="{'readonly': [('id', '!=', False)]}"
+                                   placeholder="e.g. DF-001"/>
+                            <field name="date_of_joining"/>
+                            <field name="employment_type"/>
+                        </group>
+                        <group string="Contact &amp; Address">
+                            <field name="phone_number" placeholder="+91 98765 43210"/>
+                            <field name="address_line1"/>
+                            <field name="address_line2"/>
+                            <field name="city"/>
+                            <field name="state_region"/>
+                            <field name="postal_code"/>
+                            <field name="country_name"/>
+                        </group>
+                        <group string="HR Records" groups="dayflow.group_dayflow_hr_admin">
+                            <field name="attendance_ids" readonly="1"/>
+                            <field name="leave_request_ids" readonly="1"/>
+                        </group>
+                    </page>
+                </xpath>
+            </field>
+        </record>
+
+        <!-- ============================================================
+             EMPLOYEE — List View (HR/Admin)
+             ============================================================ -->
+        <record id="view_dayflow_employee_list" model="ir.ui.view">
+            <field name="name">dayflow.employee.list</field>
+            <field name="model">hr.employee</field>
+            <field name="inherit_id" ref="hr.view_employee_tree"/>
+            <field name="arch" type="xml">
+                <xpath expr="//tree" position="inside">
+                    <field name="dayflow_employee_id" optional="show"/>
+                    <field name="employment_type" optional="show"/>
+                    <field name="date_of_joining" optional="show"/>
+                </xpath>
+            </field>
+        </record>
+
+        <!-- ============================================================
+             EMPLOYEE — Action
+             ============================================================ -->
+        <record id="action_dayflow_employee" model="ir.actions.act_window">
+            <field name="name">Employees</field>
+            <field name="res_model">hr.employee</field>
+            <field name="view_mode">list,form</field>
+            <field name="context">{'search_default_active': 1}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    No employees found. Add your first employee!
+                </p>
+            </field>
+        </record>
+
+    </data>
+</odoo>
