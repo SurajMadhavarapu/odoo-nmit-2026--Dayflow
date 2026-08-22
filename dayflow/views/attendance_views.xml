@@ -2,10 +2,12 @@
 <!--
     Dayflow Attendance Views
     Owner: KUNAM (Attendance & Leave workflow/UI)
-    Stub author: Mani — handed off for full UI implementation.
+    Stub author: Mani — handed off. Extend or replace in feature/kunam-*.
 
-    NOTE TO KUNAM: Extend or replace these views in your branch.
-    The working_hours field replaces the old worked_hours name.
+    Field reference (dayflow.attendance):
+        employee_id, date, check_in, check_out, worked_hours, status, notes
+    Status values: present | absent | half_day | leave
+    Actions: action_check_in(), action_check_out()
 -->
 <odoo>
     <data>
@@ -20,13 +22,13 @@
                 <tree string="Attendance Records"
                       decoration-success="status == 'present'"
                       decoration-warning="status == 'half_day'"
-                      decoration-danger="status  == 'absent'"
-                      decoration-info="status   == 'leave'">
+                      decoration-danger="status == 'absent'"
+                      decoration-info="status == 'leave'">
                     <field name="employee_id"/>
                     <field name="date"/>
                     <field name="check_in"/>
                     <field name="check_out"/>
-                    <field name="working_hours" widget="float_time"/>
+                    <field name="worked_hours" widget="float_time"/>
                     <field name="status"/>
                 </tree>
             </field>
@@ -41,6 +43,17 @@
             <field name="arch" type="xml">
                 <form string="Attendance Record">
                     <header>
+                        <!-- Check In/Out buttons — employee uses these -->
+                        <button name="action_check_in"
+                                string="Check In"
+                                type="object"
+                                class="btn-primary"
+                                attrs="{'invisible': [('check_in', '!=', False)]}"/>
+                        <button name="action_check_out"
+                                string="Check Out"
+                                type="object"
+                                class="btn-success"
+                                attrs="{'invisible': ['|', ('check_in', '=', False), ('check_out', '!=', False)]}"/>
                         <field name="status" widget="statusbar"
                                statusbar_visible="present,half_day,absent,leave"/>
                     </header>
@@ -53,7 +66,7 @@
                             <group string="Times">
                                 <field name="check_in"/>
                                 <field name="check_out"/>
-                                <field name="working_hours" widget="float_time"/>
+                                <field name="worked_hours" widget="float_time"/>
                             </group>
                         </group>
                         <group string="Notes">
@@ -81,8 +94,13 @@
                             domain="[('status', '=', 'present')]"/>
                     <filter string="Absent"   name="filter_absent"
                             domain="[('status', '=', 'absent')]"/>
+                    <filter string="Half Day" name="filter_halfday"
+                            domain="[('status', '=', 'half_day')]"/>
                     <filter string="On Leave" name="filter_leave"
                             domain="[('status', '=', 'leave')]"/>
+                    <separator/>
+                    <filter string="My Attendance" name="filter_mine"
+                            domain="[('employee_id.user_id', '=', uid)]"/>
                     <group expand="0" string="Group By">
                         <filter string="Employee" name="group_employee"
                                 context="{'group_by': 'employee_id'}"/>
@@ -106,9 +124,18 @@
             <field name="context">{'search_default_filter_today': 1}</field>
             <field name="help" type="html">
                 <p class="o_view_nocontent_smiling_face">
-                    No attendance records yet.
+                    No attendance records found.
                 </p>
             </field>
+        </record>
+
+        <!-- My Attendance — pre-filtered to logged-in employee -->
+        <record id="action_dayflow_my_attendance" model="ir.actions.act_window">
+            <field name="name">My Attendance</field>
+            <field name="res_model">dayflow.attendance</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="view_dayflow_attendance_search"/>
+            <field name="context">{'search_default_filter_mine': 1}</field>
         </record>
 
     </data>

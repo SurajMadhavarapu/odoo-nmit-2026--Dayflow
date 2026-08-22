@@ -3,12 +3,13 @@
     Dayflow Employee Views
     Owner: Mani (HR Core)
     Extends the standard hr.employee form with a Dayflow tab.
+    Harshith: extend/replace the Dayflow tab for the full dashboard UI.
 -->
 <odoo>
     <data>
 
         <!-- ============================================================
-             EMPLOYEE FORM — inherits hr.employee form, adds Dayflow tab
+             EXTEND hr.employee FORM — add Dayflow tab
         ============================================================ -->
         <record id="view_dayflow_employee_form" model="ir.ui.view">
             <field name="name">dayflow.hr.employee.form</field>
@@ -20,55 +21,51 @@
 
                         <group string="Dayflow Identity">
                             <field name="df_employee_id"/>
-                            <field name="employment_type"/>
-                            <field name="date_joined"/>
+                            <field name="df_employment_type"/>
+                            <field name="df_joining_date"/>
+                            <field name="df_role"
+                                   groups="dayflow.group_dayflow_hr_admin"/>
                         </group>
 
                         <group string="Personal Contact" col="2">
                             <field name="df_phone"/>
                             <field name="df_address" widget="text"/>
-                            <field name="emergency_contact_name"/>
-                            <field name="emergency_contact_phone"/>
+                            <field name="df_emergency_contact"/>
+                            <field name="df_emergency_phone"/>
                         </group>
 
-                        <separator string="Documents"/>
-                        <field name="df_document_ids">
-                            <tree editable="bottom">
-                                <field name="name"/>
-                                <field name="document_type"/>
-                                <field name="file" widget="binary" filename="file_name"/>
-                                <field name="file_name" invisible="1"/>
-                                <field name="note"/>
-                                <field name="active" invisible="1"/>
-                            </tree>
-                        </field>
+                        <group string="Demographics"
+                               groups="dayflow.group_dayflow_hr_admin">
+                            <field name="df_date_of_birth"/>
+                            <field name="df_gender"/>
+                        </group>
 
-                        <separator string="Attendance (view only — managed by Kunam's module)"/>
+                        <separator string="Attendance Summary (read-only)"/>
                         <field name="df_attendance_ids" readonly="1">
                             <tree>
                                 <field name="date"/>
                                 <field name="check_in"/>
                                 <field name="check_out"/>
-                                <field name="working_hours" widget="float_time"/>
+                                <field name="worked_hours" widget="float_time"/>
                                 <field name="status"
                                        decoration-success="status == 'present'"
                                        decoration-warning="status == 'half_day'"
-                                       decoration-danger="status  == 'absent'"
-                                       decoration-info="status   == 'leave'"/>
+                                       decoration-danger="status == 'absent'"
+                                       decoration-info="status == 'leave'"/>
                             </tree>
                         </field>
 
-                        <separator string="Leave Requests (view only — managed by Kunam's module)"/>
+                        <separator string="Leave Requests (read-only)"/>
                         <field name="df_leave_ids" readonly="1">
                             <tree>
                                 <field name="leave_type"/>
                                 <field name="date_from"/>
                                 <field name="date_to"/>
                                 <field name="number_of_days"/>
-                                <field name="status"
-                                       decoration-success="status == 'approved'"
-                                       decoration-danger="status  == 'rejected'"
-                                       decoration-warning="status == 'draft'"/>
+                                <field name="state"
+                                       decoration-success="state == 'approved'"
+                                       decoration-danger="state == 'rejected'"
+                                       decoration-warning="state in ('draft','pending')"/>
                             </tree>
                         </field>
 
@@ -78,42 +75,17 @@
         </record>
 
         <!-- ============================================================
-             EMPLOYEE DOCUMENT — standalone list view
+             EMPLOYEE LIST / KANBAN (HR Admin)
         ============================================================ -->
-        <record id="view_dayflow_employee_document_tree" model="ir.ui.view">
-            <field name="name">dayflow.employee.document.tree</field>
-            <field name="model">dayflow.employee.document</field>
-            <field name="arch" type="xml">
-                <tree string="Employee Documents">
-                    <field name="employee_id"/>
-                    <field name="name"/>
-                    <field name="document_type"/>
-                    <field name="file_name"/>
-                    <field name="active"/>
-                </tree>
-            </field>
-        </record>
-
-        <record id="view_dayflow_employee_document_form" model="ir.ui.view">
-            <field name="name">dayflow.employee.document.form</field>
-            <field name="model">dayflow.employee.document</field>
-            <field name="arch" type="xml">
-                <form string="Employee Document">
-                    <sheet>
-                        <group>
-                            <field name="employee_id" groups="dayflow.group_dayflow_hr_admin"/>
-                            <field name="name"/>
-                            <field name="document_type"/>
-                        </group>
-                        <group string="File">
-                            <field name="file" widget="binary" filename="file_name"/>
-                            <field name="file_name" invisible="1"/>
-                        </group>
-                        <group string="Notes">
-                            <field name="note" nolabel="1"/>
-                        </group>
-                    </sheet>
-                </form>
+        <record id="action_dayflow_employees" model="ir.actions.act_window">
+            <field name="name">Employees</field>
+            <field name="res_model">hr.employee</field>
+            <field name="view_mode">kanban,list,form</field>
+            <field name="context">{'search_default_active': 1}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    No employees yet. Create the first one!
+                </p>
             </field>
         </record>
 

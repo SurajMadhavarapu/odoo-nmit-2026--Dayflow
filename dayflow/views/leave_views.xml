@@ -2,10 +2,14 @@
 <!--
     Dayflow Leave Views
     Owner: KUNAM (Attendance & Leave workflow/UI)
-    Stub author: Mani — handed off for full UI implementation.
+    Stub author: Mani — extend or replace in feature/kunam-*.
 
-    NOTE TO KUNAM: Extend or replace these views in your branch.
-    Group references use the canonical group_dayflow_hr_admin.
+    Field reference (dayflow.leave.request):
+        employee_id, leave_type, date_from, date_to, number_of_days,
+        remarks, state, hr_comment, approved_by, approved_date
+    state values: draft | pending | approved | rejected
+    leave_type values: paid | sick | unpaid
+    Actions: action_submit(), action_approve(), action_reject(), action_reset_to_draft()
 -->
 <odoo>
     <data>
@@ -18,15 +22,16 @@
             <field name="model">dayflow.leave.request</field>
             <field name="arch" type="xml">
                 <tree string="Leave Requests"
-                      decoration-success="status == 'approved'"
-                      decoration-danger="status  == 'rejected'"
-                      decoration-warning="status == 'draft'">
+                      decoration-success="state == 'approved'"
+                      decoration-danger="state == 'rejected'"
+                      decoration-warning="state == 'pending'"
+                      decoration-muted="state == 'draft'">
                     <field name="employee_id"/>
                     <field name="leave_type"/>
                     <field name="date_from"/>
                     <field name="date_to"/>
                     <field name="number_of_days"/>
-                    <field name="status"/>
+                    <field name="state"/>
                     <field name="approved_by"/>
                 </tree>
             </field>
@@ -41,48 +46,62 @@
             <field name="arch" type="xml">
                 <form string="Leave Request">
                     <header>
-                        <button name="action_approve" string="Approve"
-                                type="object" class="btn-success"
-                                attrs="{'invisible': [('status', '!=', 'draft')]}"
-                                groups="dayflow.group_dayflow_hr_admin"/>
-                        <button name="action_reject" string="Reject"
-                                type="object" class="btn-danger"
-                                attrs="{'invisible': [('status', '!=', 'draft')]}"
-                                groups="dayflow.group_dayflow_hr_admin"/>
-                        <button name="action_reset_to_draft" string="Reset to Pending"
+                        <!-- Employee submits draft -->
+                        <button name="action_submit"
+                                string="Submit Request"
                                 type="object"
-                                attrs="{'invisible': [('status', '!=', 'rejected')]}"
+                                class="btn-primary"
+                                attrs="{'invisible': [('state', '!=', 'draft')]}"/>
+                        <!-- HR Admin approves / rejects pending -->
+                        <button name="action_approve"
+                                string="Approve"
+                                type="object"
+                                class="btn-success"
+                                attrs="{'invisible': [('state', '!=', 'pending')]}"
                                 groups="dayflow.group_dayflow_hr_admin"/>
-                        <field name="status" widget="statusbar"
-                               statusbar_visible="draft,approved,rejected"/>
+                        <button name="action_reject"
+                                string="Reject"
+                                type="object"
+                                class="btn-danger"
+                                attrs="{'invisible': [('state', '!=', 'pending')]}"
+                                groups="dayflow.group_dayflow_hr_admin"/>
+                        <!-- Allow HR to reset rejected back to draft -->
+                        <button name="action_reset_to_draft"
+                                string="Reset to Draft"
+                                type="object"
+                                attrs="{'invisible': [('state', '!=', 'rejected')]}"
+                                groups="dayflow.group_dayflow_hr_admin"/>
+                        <field name="state" widget="statusbar"
+                               statusbar_visible="draft,pending,approved,rejected"/>
                     </header>
                     <sheet>
                         <group>
                             <group string="Leave Details">
                                 <field name="employee_id"
-                                       attrs="{'readonly': [('status', '!=', 'draft')]}"/>
+                                       attrs="{'readonly': [('state', '!=', 'draft')]}"/>
                                 <field name="leave_type"
-                                       attrs="{'readonly': [('status', '!=', 'draft')]}"/>
+                                       attrs="{'readonly': [('state', '!=', 'draft')]}"/>
                                 <field name="date_from"
-                                       attrs="{'readonly': [('status', '!=', 'draft')]}"/>
+                                       attrs="{'readonly': [('state', '!=', 'draft')]}"/>
                                 <field name="date_to"
-                                       attrs="{'readonly': [('status', '!=', 'draft')]}"/>
+                                       attrs="{'readonly': [('state', '!=', 'draft')]}"/>
                                 <field name="number_of_days"/>
                             </group>
-                            <group string="Approval Info"
-                                   attrs="{'invisible': [('status', '=', 'draft')]}">
+                            <group string="Decision"
+                                   attrs="{'invisible': [('state', 'in', ('draft', 'pending'))]}">
                                 <field name="approved_by" readonly="1"/>
                                 <field name="approved_date" readonly="1"/>
                             </group>
                         </group>
-                        <group string="Remarks">
+                        <group string="Remarks (Employee)">
                             <field name="remarks" nolabel="1"
-                                   placeholder="Reason for leave..."
-                                   attrs="{'readonly': [('status', '!=', 'draft')]}"/>
+                                   placeholder="Reason for leave request..."
+                                   attrs="{'readonly': [('state', '!=', 'draft')]}"/>
                         </group>
-                        <group string="HR Comment" groups="dayflow.group_dayflow_hr_admin">
+                        <group string="HR Comment"
+                               groups="dayflow.group_dayflow_hr_admin">
                             <field name="hr_comment" nolabel="1"
-                                   placeholder="HR notes on this request..."/>
+                                   placeholder="Add a note for the employee..."/>
                         </group>
                     </sheet>
                     <div class="oe_chatter">
@@ -104,13 +123,16 @@
                 <search string="Search Leave Requests">
                     <field name="employee_id"/>
                     <field name="leave_type"/>
-                    <field name="status"/>
+                    <field name="state"/>
+                    <filter string="Draft"    name="filter_draft"
+                            domain="[('state', '=', 'draft')]"/>
                     <filter string="Pending"  name="filter_pending"
-                            domain="[('status', '=', 'draft')]"/>
+                            domain="[('state', '=', 'pending')]"/>
                     <filter string="Approved" name="filter_approved"
-                            domain="[('status', '=', 'approved')]"/>
+                            domain="[('state', '=', 'approved')]"/>
                     <filter string="Rejected" name="filter_rejected"
-                            domain="[('status', '=', 'rejected')]"/>
+                            domain="[('state', '=', 'rejected')]"/>
+                    <separator/>
                     <filter string="My Requests" name="filter_mine"
                             domain="[('employee_id.user_id', '=', uid)]"/>
                     <group expand="0" string="Group By">
@@ -119,7 +141,7 @@
                         <filter string="Leave Type" name="group_type"
                                 context="{'group_by': 'leave_type'}"/>
                         <filter string="Status"     name="group_status"
-                                context="{'group_by': 'status'}"/>
+                                context="{'group_by': 'state'}"/>
                     </group>
                 </search>
             </field>
@@ -128,6 +150,7 @@
         <!-- ============================================================
              LEAVE REQUEST — Window Actions
         ============================================================ -->
+        <!-- HR Admin: see all, default to pending -->
         <record id="action_dayflow_leave_all" model="ir.actions.act_window">
             <field name="name">All Leave Requests</field>
             <field name="res_model">dayflow.leave.request</field>
@@ -136,6 +159,7 @@
             <field name="context">{'search_default_filter_pending': 1}</field>
         </record>
 
+        <!-- Employee: see only own requests -->
         <record id="action_dayflow_leave_my" model="ir.actions.act_window">
             <field name="name">My Leave Requests</field>
             <field name="res_model">dayflow.leave.request</field>
