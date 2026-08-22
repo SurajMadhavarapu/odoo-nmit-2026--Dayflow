@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- ============================================================
+             MODULE CATEGORY
+        ============================================================ -->
+        <record id="module_category_dayflow" model="ir.module.category">
+            <field name="name">Dayflow HRMS</field>
+            <field name="description">Dayflow Human Resource Management System</field>
+            <field name="sequence">20</field>
+        </record>
+
+        <!-- ============================================================
+             SECURITY GROUPS
+        ============================================================ -->
+
+        <!-- Regular employee -->
+        <record id="group_dayflow_employee" model="res.groups">
+            <field name="name">Employee</field>
+            <field name="category_id" ref="module_category_dayflow"/>
+            <field name="comment">View own profile, attendance, apply leave, view own salary.</field>
+        </record>
+
+        <!-- HR / Admin — inherits employee permissions -->
+        <record id="group_dayflow_hr" model="res.groups">
+            <field name="name">HR / Admin</field>
+            <field name="category_id" ref="module_category_dayflow"/>
+            <field name="implied_ids" eval="[(4, ref('group_dayflow_employee'))]"/>
+            <field name="comment">Manage employees, approve leave, update payroll, view all records.</field>
+        </record>
+
+        <!-- ============================================================
+             RECORD RULES — row-level security
+        ============================================================ -->
+
+        <!-- ATTENDANCE: employees see only their own -->
+        <record id="rule_attendance_employee_own" model="ir.rule">
+            <field name="name">Dayflow Attendance: Employee sees own records</field>
+            <field name="model_id" ref="model_dayflow_attendance"/>
+            <field name="domain_force">[('employee_id.user_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('group_dayflow_employee'))]"/>
+            <field name="perm_read"   eval="True"/>
+            <field name="perm_write"  eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <record id="rule_attendance_hr_all" model="ir.rule">
+            <field name="name">Dayflow Attendance: HR sees all records</field>
+            <field name="model_id" ref="model_dayflow_attendance"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('group_dayflow_hr'))]"/>
+            <field name="perm_read"   eval="True"/>
+            <field name="perm_write"  eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <!-- LEAVE: employees see only their own -->
+        <record id="rule_leave_employee_own" model="ir.rule">
+            <field name="name">Dayflow Leave: Employee sees own requests</field>
+            <field name="model_id" ref="model_dayflow_leave_request"/>
+            <field name="domain_force">[('employee_id.user_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('group_dayflow_employee'))]"/>
+            <field name="perm_read"   eval="True"/>
+            <field name="perm_write"  eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <record id="rule_leave_hr_all" model="ir.rule">
+            <field name="name">Dayflow Leave: HR sees all requests</field>
+            <field name="model_id" ref="model_dayflow_leave_request"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('group_dayflow_hr'))]"/>
+            <field name="perm_read"   eval="True"/>
+            <field name="perm_write"  eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <!-- PAYROLL: employees READ own only, no write -->
+        <record id="rule_payroll_employee_own" model="ir.rule">
+            <field name="name">Dayflow Payroll: Employee reads own record</field>
+            <field name="model_id" ref="model_dayflow_payroll"/>
+            <field name="domain_force">[('employee_id.user_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('group_dayflow_employee'))]"/>
+            <field name="perm_read"   eval="True"/>
+            <field name="perm_write"  eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <record id="rule_payroll_hr_all" model="ir.rule">
+            <field name="name">Dayflow Payroll: HR manages all records</field>
+            <field name="model_id" ref="model_dayflow_payroll"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('group_dayflow_hr'))]"/>
+            <field name="perm_read"   eval="True"/>
+            <field name="perm_write"  eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <!-- AUDIT LOG: read-only for HR, no employee access -->
+        <record id="rule_audit_hr_readonly" model="ir.rule">
+            <field name="name">Dayflow Audit Log: HR read-only</field>
+            <field name="model_id" ref="model_dayflow_audit_log"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('group_dayflow_hr'))]"/>
+            <field name="perm_read"   eval="True"/>
+            <field name="perm_write"  eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+    </data>
+</odoo>

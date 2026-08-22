@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- ============================================================
+             LEAVE REQUEST — List View
+        ============================================================ -->
+        <record id="view_dayflow_leave_tree" model="ir.ui.view">
+            <field name="name">dayflow.leave.request.tree</field>
+            <field name="model">dayflow.leave.request</field>
+            <field name="arch" type="xml">
+                <tree string="Leave Requests"
+                      decoration-success="status == 'approved'"
+                      decoration-danger="status == 'rejected'"
+                      decoration-warning="status == 'draft'">
+                    <field name="employee_id"/>
+                    <field name="leave_type"/>
+                    <field name="date_from"/>
+                    <field name="date_to"/>
+                    <field name="number_of_days"/>
+                    <field name="status"/>
+                    <field name="approved_by"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- ============================================================
+             LEAVE REQUEST — Form View
+        ============================================================ -->
+        <record id="view_dayflow_leave_form" model="ir.ui.view">
+            <field name="name">dayflow.leave.request.form</field>
+            <field name="model">dayflow.leave.request</field>
+            <field name="arch" type="xml">
+                <form string="Leave Request">
+                    <header>
+                        <!-- HR/Admin action buttons -->
+                        <button name="action_approve" string="Approve"
+                                type="object" class="btn-success"
+                                attrs="{'invisible': [('status', '!=', 'draft')]}"
+                                groups="dayflow.group_dayflow_hr"/>
+                        <button name="action_reject" string="Reject"
+                                type="object" class="btn-danger"
+                                attrs="{'invisible': [('status', '!=', 'draft')]}"
+                                groups="dayflow.group_dayflow_hr"/>
+                        <button name="action_reset_to_draft" string="Reset to Pending"
+                                type="object"
+                                attrs="{'invisible': [('status', '!=', 'rejected')]}"
+                                groups="dayflow.group_dayflow_hr"/>
+                        <field name="status" widget="statusbar"
+                               statusbar_visible="draft,approved,rejected"/>
+                    </header>
+                    <sheet>
+                        <group>
+                            <group string="Leave Details">
+                                <field name="employee_id"
+                                       attrs="{'readonly': [('status', '!=', 'draft')]}"/>
+                                <field name="leave_type"
+                                       attrs="{'readonly': [('status', '!=', 'draft')]}"/>
+                                <field name="date_from"
+                                       attrs="{'readonly': [('status', '!=', 'draft')]}"/>
+                                <field name="date_to"
+                                       attrs="{'readonly': [('status', '!=', 'draft')]}"/>
+                                <field name="number_of_days"/>
+                            </group>
+                            <group string="Approval Info"
+                                   attrs="{'invisible': [('status', '=', 'draft')]}">
+                                <field name="approved_by" readonly="1"/>
+                                <field name="approved_date" readonly="1"/>
+                            </group>
+                        </group>
+                        <group string="Remarks (Employee)">
+                            <field name="remarks" nolabel="1" placeholder="Reason for leave..."
+                                   attrs="{'readonly': [('status', '!=', 'draft')]}"/>
+                        </group>
+                        <group string="HR Comment"
+                               groups="dayflow.group_dayflow_hr">
+                            <field name="hr_comment" nolabel="1" placeholder="HR notes on this request..."/>
+                        </group>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids"/>
+                        <field name="activity_ids"/>
+                        <field name="message_ids"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <!-- ============================================================
+             LEAVE REQUEST — Search View
+        ============================================================ -->
+        <record id="view_dayflow_leave_search" model="ir.ui.view">
+            <field name="name">dayflow.leave.request.search</field>
+            <field name="model">dayflow.leave.request</field>
+            <field name="arch" type="xml">
+                <search string="Search Leave Requests">
+                    <field name="employee_id"/>
+                    <field name="leave_type"/>
+                    <field name="status"/>
+                    <filter string="Pending"  name="filter_pending"  domain="[('status', '=', 'draft')]"/>
+                    <filter string="Approved" name="filter_approved" domain="[('status', '=', 'approved')]"/>
+                    <filter string="Rejected" name="filter_rejected" domain="[('status', '=', 'rejected')]"/>
+                    <filter string="My Requests" name="filter_mine"
+                            domain="[('employee_id.user_id', '=', uid)]"/>
+                    <group expand="0" string="Group By">
+                        <filter string="Employee"   name="group_employee"   context="{'group_by': 'employee_id'}"/>
+                        <filter string="Leave Type" name="group_leave_type" context="{'group_by': 'leave_type'}"/>
+                        <filter string="Status"     name="group_status"     context="{'group_by': 'status'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <!-- ============================================================
+             LEAVE REQUEST — Actions
+        ============================================================ -->
+        <record id="action_dayflow_leave_all" model="ir.actions.act_window">
+            <field name="name">All Leave Requests</field>
+            <field name="res_model">dayflow.leave.request</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="view_dayflow_leave_search"/>
+            <field name="context">{'search_default_filter_pending': 1}</field>
+        </record>
+
+        <record id="action_dayflow_leave_my" model="ir.actions.act_window">
+            <field name="name">My Leave Requests</field>
+            <field name="res_model">dayflow.leave.request</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="view_dayflow_leave_search"/>
+            <field name="context">{'search_default_filter_mine': 1}</field>
+        </record>
+
+    </data>
+</odoo>

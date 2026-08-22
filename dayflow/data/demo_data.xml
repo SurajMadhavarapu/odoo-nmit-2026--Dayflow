@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Dayflow Demo Data
+    Creates: 1 HR Admin user + 3 employee users with linked hr.employee records,
+             attendance samples, leave requests, and payroll records.
+    Load only with --load-language or when demo=True in the DB config.
+-->
+<odoo>
+    <data noupdate="1">
+
+        <!-- ============================================================
+             DEMO USERS
+        ============================================================ -->
+
+        <!-- HR Admin user -->
+        <record id="user_hr_admin" model="res.users">
+            <field name="name">Priya Sharma (HR Admin)</field>
+            <field name="login">priya.sharma@dayflow.demo</field>
+            <field name="password">Dayflow@123</field>
+            <field name="groups_id" eval="[
+                (4, ref('base.group_user')),
+                (4, ref('dayflow.group_dayflow_hr'))
+            ]"/>
+        </record>
+
+        <!-- Employee 1 -->
+        <record id="user_emp_ravi" model="res.users">
+            <field name="name">Ravi Kumar</field>
+            <field name="login">ravi.kumar@dayflow.demo</field>
+            <field name="password">Dayflow@123</field>
+            <field name="groups_id" eval="[
+                (4, ref('base.group_user')),
+                (4, ref('dayflow.group_dayflow_employee'))
+            ]"/>
+        </record>
+
+        <!-- Employee 2 -->
+        <record id="user_emp_anita" model="res.users">
+            <field name="name">Anita Reddy</field>
+            <field name="login">anita.reddy@dayflow.demo</field>
+            <field name="password">Dayflow@123</field>
+            <field name="groups_id" eval="[
+                (4, ref('base.group_user')),
+                (4, ref('dayflow.group_dayflow_employee'))
+            ]"/>
+        </record>
+
+        <!-- Employee 3 -->
+        <record id="user_emp_kiran" model="res.users">
+            <field name="name">Kiran Patel</field>
+            <field name="login">kiran.patel@dayflow.demo</field>
+            <field name="password">Dayflow@123</field>
+            <field name="groups_id" eval="[
+                (4, ref('base.group_user')),
+                (4, ref('dayflow.group_dayflow_employee'))
+            ]"/>
+        </record>
+
+        <!-- ============================================================
+             DEMO HR.EMPLOYEE RECORDS (extends Odoo's hr.employee)
+        ============================================================ -->
+
+        <record id="emp_priya" model="hr.employee">
+            <field name="name">Priya Sharma</field>
+            <field name="df_employee_id">DF-001</field>
+            <field name="work_email">priya.sharma@dayflow.demo</field>
+            <field name="job_title">HR Manager</field>
+            <field name="df_phone">+91 98765 00001</field>
+            <field name="df_address">12 MG Road, Bangalore, Karnataka 560001</field>
+            <field name="user_id" ref="user_hr_admin"/>
+        </record>
+
+        <record id="emp_ravi" model="hr.employee">
+            <field name="name">Ravi Kumar</field>
+            <field name="df_employee_id">DF-002</field>
+            <field name="work_email">ravi.kumar@dayflow.demo</field>
+            <field name="job_title">Software Engineer</field>
+            <field name="df_phone">+91 98765 00002</field>
+            <field name="df_address">45 Koramangala, Bangalore, Karnataka 560034</field>
+            <field name="user_id" ref="user_emp_ravi"/>
+        </record>
+
+        <record id="emp_anita" model="hr.employee">
+            <field name="name">Anita Reddy</field>
+            <field name="df_employee_id">DF-003</field>
+            <field name="work_email">anita.reddy@dayflow.demo</field>
+            <field name="job_title">QA Engineer</field>
+            <field name="df_phone">+91 98765 00003</field>
+            <field name="df_address">78 Whitefield, Bangalore, Karnataka 560066</field>
+            <field name="user_id" ref="user_emp_anita"/>
+        </record>
+
+        <record id="emp_kiran" model="hr.employee">
+            <field name="name">Kiran Patel</field>
+            <field name="df_employee_id">DF-004</field>
+            <field name="work_email">kiran.patel@dayflow.demo</field>
+            <field name="job_title">UI Designer</field>
+            <field name="df_phone">+91 98765 00004</field>
+            <field name="df_address">23 HSR Layout, Bangalore, Karnataka 560102</field>
+            <field name="user_id" ref="user_emp_kiran"/>
+        </record>
+
+        <!-- ============================================================
+             DEMO ATTENDANCE RECORDS
+        ============================================================ -->
+
+        <!-- Ravi – Present -->
+        <record id="att_ravi_present" model="dayflow.attendance">
+            <field name="employee_id" ref="emp_ravi"/>
+            <field name="date">2026-08-20</field>
+            <field name="check_in">2026-08-20 09:00:00</field>
+            <field name="check_out">2026-08-20 18:00:00</field>
+            <field name="status">present</field>
+        </record>
+
+        <!-- Ravi – Half Day -->
+        <record id="att_ravi_halfday" model="dayflow.attendance">
+            <field name="employee_id" ref="emp_ravi"/>
+            <field name="date">2026-08-19</field>
+            <field name="check_in">2026-08-19 09:00:00</field>
+            <field name="check_out">2026-08-19 13:00:00</field>
+            <field name="status">half_day</field>
+        </record>
+
+        <!-- Anita – Present -->
+        <record id="att_anita_present" model="dayflow.attendance">
+            <field name="employee_id" ref="emp_anita"/>
+            <field name="date">2026-08-20</field>
+            <field name="check_in">2026-08-20 08:45:00</field>
+            <field name="check_out">2026-08-20 17:30:00</field>
+            <field name="status">present</field>
+        </record>
+
+        <!-- Kiran – On Leave -->
+        <record id="att_kiran_leave" model="dayflow.attendance">
+            <field name="employee_id" ref="emp_kiran"/>
+            <field name="date">2026-08-20</field>
+            <field name="status">leave</field>
+        </record>
+
+        <!-- Kiran – Absent -->
+        <record id="att_kiran_absent" model="dayflow.attendance">
+            <field name="employee_id" ref="emp_kiran"/>
+            <field name="date">2026-08-19</field>
+            <field name="status">absent</field>
+        </record>
+
+        <!-- ============================================================
+             DEMO LEAVE REQUESTS
+        ============================================================ -->
+
+        <!-- Kiran – Approved sick leave -->
+        <record id="leave_kiran_approved" model="dayflow.leave.request">
+            <field name="employee_id" ref="emp_kiran"/>
+            <field name="leave_type">sick</field>
+            <field name="date_from">2026-08-20</field>
+            <field name="date_to">2026-08-21</field>
+            <field name="remarks">Fever and cold. Doctor advised rest.</field>
+            <field name="status">approved</field>
+            <field name="approved_by" ref="user_hr_admin"/>
+            <field name="approved_date">2026-08-19 10:00:00</field>
+            <field name="hr_comment">Approved. Please submit medical certificate on return.</field>
+        </record>
+
+        <!-- Ravi – Pending paid leave -->
+        <record id="leave_ravi_pending" model="dayflow.leave.request">
+            <field name="employee_id" ref="emp_ravi"/>
+            <field name="leave_type">paid</field>
+            <field name="date_from">2026-08-25</field>
+            <field name="date_to">2026-08-27</field>
+            <field name="remarks">Family function — need 3 days off.</field>
+            <field name="status">draft</field>
+        </record>
+
+        <!-- Anita – Rejected unpaid leave -->
+        <record id="leave_anita_rejected" model="dayflow.leave.request">
+            <field name="employee_id" ref="emp_anita"/>
+            <field name="leave_type">unpaid</field>
+            <field name="date_from">2026-08-18</field>
+            <field name="date_to">2026-08-18</field>
+            <field name="remarks">Personal errand.</field>
+            <field name="status">rejected</field>
+            <field name="approved_by" ref="user_hr_admin"/>
+            <field name="approved_date">2026-08-17 14:00:00</field>
+            <field name="hr_comment">Sprint deadline this week. Please reschedule.</field>
+        </record>
+
+        <!-- ============================================================
+             DEMO PAYROLL RECORDS
+        ============================================================ -->
+
+        <record id="payroll_ravi" model="dayflow.payroll">
+            <field name="employee_id" ref="emp_ravi"/>
+            <field name="effective_date">2026-08-01</field>
+            <field name="basic_salary">75000.00</field>
+            <field name="allowances">10000.00</field>
+            <field name="deductions">8000.00</field>
+            <field name="notes">August 2026 salary structure</field>
+        </record>
+
+        <record id="payroll_anita" model="dayflow.payroll">
+            <field name="employee_id" ref="emp_anita"/>
+            <field name="effective_date">2026-08-01</field>
+            <field name="basic_salary">65000.00</field>
+            <field name="allowances">8000.00</field>
+            <field name="deductions">7000.00</field>
+            <field name="notes">August 2026 salary structure</field>
+        </record>
+
+        <record id="payroll_kiran" model="dayflow.payroll">
+            <field name="employee_id" ref="emp_kiran"/>
+            <field name="effective_date">2026-08-01</field>
+            <field name="basic_salary">60000.00</field>
+            <field name="allowances">7500.00</field>
+            <field name="deductions">6500.00</field>
+            <field name="notes">August 2026 salary structure</field>
+        </record>
+
+    </data>
+</odoo>

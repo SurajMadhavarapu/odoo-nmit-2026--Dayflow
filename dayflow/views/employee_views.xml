@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- ============================================================
+             EMPLOYEE FORM — extends hr.employee with Dayflow tab
+        ============================================================ -->
+        <record id="view_dayflow_employee_form" model="ir.ui.view">
+            <field name="name">dayflow.hr.employee.form</field>
+            <field name="model">hr.employee</field>
+            <field name="inherit_id" ref="hr.view_employee_form"/>
+            <field name="arch" type="xml">
+                <!-- Insert Dayflow tab after the main HR tabs -->
+                <xpath expr="//notebook" position="inside">
+                    <page string="Dayflow HR" name="dayflow_tab">
+                        <group string="Employee Identity">
+                            <field name="df_employee_id"/>
+                        </group>
+                        <group string="Personal Contact" col="2">
+                            <field name="df_phone"/>
+                            <field name="df_address"/>
+                        </group>
+                        <separator string="Documents"/>
+                        <field name="df_document_ids">
+                            <tree editable="bottom">
+                                <field name="name"/>
+                                <field name="document_type"/>
+                                <field name="file" widget="binary" filename="file_name"/>
+                                <field name="file_name" invisible="1"/>
+                                <field name="note"/>
+                            </tree>
+                        </field>
+                        <separator string="Attendance"/>
+                        <field name="df_attendance_ids" readonly="1">
+                            <tree>
+                                <field name="date"/>
+                                <field name="check_in"/>
+                                <field name="check_out"/>
+                                <field name="working_hours" widget="float_time"/>
+                                <field name="status" decoration-success="status == 'present'"
+                                       decoration-warning="status == 'half_day'"
+                                       decoration-danger="status == 'absent'"
+                                       decoration-info="status == 'leave'"/>
+                            </tree>
+                        </field>
+                        <separator string="Leave Requests"/>
+                        <field name="df_leave_ids" readonly="1">
+                            <tree>
+                                <field name="leave_type"/>
+                                <field name="date_from"/>
+                                <field name="date_to"/>
+                                <field name="number_of_days"/>
+                                <field name="status" decoration-success="status == 'approved'"
+                                       decoration-danger="status == 'rejected'"
+                                       decoration-warning="status == 'draft'"/>
+                            </tree>
+                        </field>
+                    </page>
+                </xpath>
+            </field>
+        </record>
+
+        <!-- ============================================================
+             DOCUMENT standalone list view
+        ============================================================ -->
+        <record id="view_dayflow_employee_document_tree" model="ir.ui.view">
+            <field name="name">dayflow.employee.document.tree</field>
+            <field name="model">dayflow.employee.document</field>
+            <field name="arch" type="xml">
+                <tree string="Employee Documents">
+                    <field name="employee_id"/>
+                    <field name="name"/>
+                    <field name="document_type"/>
+                    <field name="file_name"/>
+                    <field name="active"/>
+                </tree>
+            </field>
+        </record>
+
+    </data>
+</odoo>

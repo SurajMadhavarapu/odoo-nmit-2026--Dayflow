@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- ============================================================
+             ATTENDANCE — List View
+        ============================================================ -->
+        <record id="view_dayflow_attendance_tree" model="ir.ui.view">
+            <field name="name">dayflow.attendance.tree</field>
+            <field name="model">dayflow.attendance</field>
+            <field name="arch" type="xml">
+                <tree string="Attendance Records"
+                      decoration-success="status == 'present'"
+                      decoration-warning="status == 'half_day'"
+                      decoration-danger="status == 'absent'"
+                      decoration-info="status == 'leave'">
+                    <field name="employee_id"/>
+                    <field name="date"/>
+                    <field name="check_in"/>
+                    <field name="check_out"/>
+                    <field name="working_hours" widget="float_time"/>
+                    <field name="status"/>
+                    <button name="action_check_out" string="Check Out"
+                            type="object" icon="fa-sign-out"
+                            attrs="{'invisible': [('check_out', '!=', False)]}"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- ============================================================
+             ATTENDANCE — Form View
+        ============================================================ -->
+        <record id="view_dayflow_attendance_form" model="ir.ui.view">
+            <field name="name">dayflow.attendance.form</field>
+            <field name="model">dayflow.attendance</field>
+            <field name="arch" type="xml">
+                <form string="Attendance Record">
+                    <header>
+                        <button name="action_check_out" string="Check Out"
+                                type="object" class="btn-primary"
+                                attrs="{'invisible': [('check_out', '!=', False)]}"/>
+                        <field name="status" widget="statusbar"
+                               statusbar_visible="present,half_day,absent,leave"/>
+                    </header>
+                    <sheet>
+                        <group>
+                            <group string="Employee">
+                                <field name="employee_id"/>
+                                <field name="date"/>
+                            </group>
+                            <group string="Times">
+                                <field name="check_in"/>
+                                <field name="check_out"/>
+                                <field name="working_hours" widget="float_time"/>
+                            </group>
+                        </group>
+                        <group string="Notes">
+                            <field name="notes" nolabel="1" placeholder="Optional notes..."/>
+                        </group>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids"/>
+                        <field name="activity_ids"/>
+                        <field name="message_ids"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <!-- ============================================================
+             ATTENDANCE — Search View
+        ============================================================ -->
+        <record id="view_dayflow_attendance_search" model="ir.ui.view">
+            <field name="name">dayflow.attendance.search</field>
+            <field name="model">dayflow.attendance</field>
+            <field name="arch" type="xml">
+                <search string="Search Attendance">
+                    <field name="employee_id"/>
+                    <field name="date"/>
+                    <field name="status"/>
+                    <filter string="Today" name="filter_today"
+                            domain="[('date', '=', context_today().strftime('%Y-%m-%d'))]"/>
+                    <filter string="This Week" name="filter_week"
+                            domain="[('date', '>=', (context_today() - datetime.timedelta(days=context_today().weekday())).strftime('%Y-%m-%d'))]"/>
+                    <filter string="Present" name="filter_present" domain="[('status', '=', 'present')]"/>
+                    <filter string="Absent"  name="filter_absent"  domain="[('status', '=', 'absent')]"/>
+                    <filter string="On Leave" name="filter_leave"  domain="[('status', '=', 'leave')]"/>
+                    <group expand="0" string="Group By">
+                        <filter string="Employee" name="group_employee" context="{'group_by': 'employee_id'}"/>
+                        <filter string="Date"     name="group_date"     context="{'group_by': 'date'}"/>
+                        <filter string="Status"   name="group_status"   context="{'group_by': 'status'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <!-- ============================================================
+             ATTENDANCE — Action
+        ============================================================ -->
+        <record id="action_dayflow_attendance" model="ir.actions.act_window">
+            <field name="name">Attendance</field>
+            <field name="res_model">dayflow.attendance</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="view_dayflow_attendance_search"/>
+            <field name="context">{'search_default_filter_today': 1}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    No attendance records yet. Employees can check in from their dashboard.
+                </p>
+            </field>
+        </record>
+
+    </data>
+</odoo>
