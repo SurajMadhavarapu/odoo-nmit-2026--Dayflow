@@ -2,11 +2,12 @@
 
 > **Branch:** `feature/mani-hr-core`
 > **Last updated:** 2026-08-22
-> **Contact:** Mani (HR Core / Data Layer)
+> **Owner:** Mani (HR Core / Data Layer)
 
-This document is the **stable interface contract** for all Dayflow backend models.
+This is the **stable field contract** for all Dayflow backend models.
 
-> ⚠️ **Do NOT rename models, fields, or selection values without first notifying Suraj (architecture lead) and the affected teammate.**
+> ⚠️ Do NOT rename models, fields, or selection values after teammates start integrating.
+> If a change is needed, tell Suraj first, then the affected teammate.
 
 ---
 
@@ -14,27 +15,27 @@ This document is the **stable interface contract** for all Dayflow backend model
 
 | Domain | Owner | Branch |
 |--------|-------|--------|
-| Authentication, architecture, integration | Suraj | main / feature/suraj-* |
-| Employee, Payroll, Security groups, Audit | **Mani** | feature/mani-hr-core |
-| Attendance, Leave workflow & UI | Kunam | feature/kunam-* |
-| Dashboard, testing, demo prep | Harshith | feature/harshith-* |
+| Auth, architecture, integration, final testing | Suraj | main / feature/suraj-* |
+| Employee, Payroll, Security, Audit trail | **Mani** | feature/mani-hr-core |
+| Attendance + Leave workflow & UI | Kunam | feature/kunam-* |
+| Employee dashboard, HR dashboard, demo prep | Harshith | feature/harshith-* |
 
 ---
 
-## Security Groups (canonical — do not rename)
+## Security Groups (canonical — do NOT rename)
 
-| XML ID | Technical Name | Purpose |
-|--------|---------------|---------|
-| `dayflow.group_dayflow_employee` | Dayflow Employee | Regular employees |
-| `dayflow.group_dayflow_hr_admin` | Dayflow HR / Admin | HR officers & admins |
+| XML ID | Name | Purpose |
+|--------|------|---------|
+| `dayflow.group_dayflow_employee` | Employee | Regular employees |
+| `dayflow.group_dayflow_hr_admin` | HR / Admin | HR officers and admins |
 
-Use in views:
+**Use in views:**
 ```xml
 groups="dayflow.group_dayflow_hr_admin"
 groups="dayflow.group_dayflow_employee"
 ```
 
-Use in Python:
+**Use in Python:**
 ```python
 self.env.user.has_group('dayflow.group_dayflow_hr_admin')
 self.env.user.has_group('dayflow.group_dayflow_employee')
@@ -44,71 +45,59 @@ self.env.user.has_group('dayflow.group_dayflow_employee')
 
 ## 1. Employee
 
-**Base model:** `hr.employee` (Odoo built-in, extended by Mani)
+**Base model:** `hr.employee` (Odoo built-in)
+**Extended by:** Mani's `employee.py` via `_inherit = 'hr.employee'`
 
-### Dayflow-added fields
+### Dayflow-added fields on `hr.employee`
 
 | Field | Type | Editable by |
 |-------|------|-------------|
 | `df_employee_id` | Char (unique, indexed) | HR Admin only |
+| `df_employment_type` | Selection: `full_time \| part_time \| contract \| intern` | HR Admin |
+| `df_joining_date` | Date | HR Admin |
+| `df_role` | Selection: `employee \| hr_admin` | HR Admin |
 | `df_phone` | Char | Employee (own) |
 | `df_address` | Text | Employee (own) |
-| `employment_type` | Selection | HR Admin |
-| `date_joined` | Date | HR Admin |
-| `emergency_contact_name` | Char | HR Admin |
-| `emergency_contact_phone` | Char | HR Admin |
-| `df_document_ids` | One2many → `dayflow.employee.document` | Employee (own) |
-| `df_attendance_ids` | One2many → `dayflow.attendance` | Read-only here; Kunam owns |
-| `df_leave_ids` | One2many → `dayflow.leave.request` | Read-only here; Kunam owns |
-| `df_payroll_ids` | One2many → `dayflow.payroll` | Read-only here; HR Admin via Payroll module |
+| `df_date_of_birth` | Date | HR Admin |
+| `df_gender` | Selection | HR Admin |
+| `df_emergency_contact` | Char | Employee (own) |
+| `df_emergency_phone` | Char | Employee (own) |
+| `df_active` | Boolean | HR Admin |
+| `df_attendance_ids` | One2many → `dayflow.attendance` | Read in views |
+| `df_leave_ids` | One2many → `dayflow.leave.request` | Read in views |
+| `df_payroll_ids` | One2many → `dayflow.payroll` | Read in views |
 
-### Existing hr.employee fields (use these, don't duplicate)
+### Key existing `hr.employee` fields (use these — do NOT duplicate)
 
-| Field | Usage |
-|-------|-------|
+| Field | Purpose |
+|-------|---------|
 | `name` | Full name |
 | `work_email` | Work email |
-| `job_title` | Job title (text) |
-| `job_id` | Job position (Many2one hr.job) |
-| `department_id` | Department |
+| `job_title` | Free-text job title |
+| `job_id` | Many2one hr.job |
+| `department_id` | Many2one hr.department |
 | `image_1920` | Profile picture |
-| `active` | Archive / active state |
-| `user_id` | Linked portal/internal user |
+| `active` | Odoo standard archive flag |
+| `user_id` | Linked res.users (handles login) |
 
 ---
 
-## 2. Employee Document
-
-**Model:** `dayflow.employee.document`
-
-| Field | Type | Notes |
-|-------|------|-------|
-| `employee_id` | Many2one → `hr.employee` | Required |
-| `name` | Char | Document name |
-| `document_type` | Selection | id_proof, address_proof, certificate, contract, other |
-| `file` | Binary (attachment) | The uploaded file |
-| `file_name` | Char | Original filename |
-| `note` | Text | Optional note |
-| `active` | Boolean | Archive support |
-
----
-
-## 3. Attendance
+## 2. Attendance
 
 **Model:** `dayflow.attendance`
-**Owner:** KUNAM
+**UI Owner:** Kunam
 
 | Field | Type | Notes |
 |-------|------|-------|
-| `employee_id` | Many2one → `hr.employee` | Required — use this, not a separate char ID |
+| `employee_id` | Many2one `hr.employee` | Required |
 | `date` | Date | Required; unique per employee (SQL constraint) |
 | `check_in` | Datetime | Optional |
 | `check_out` | Datetime | Optional; must be after check_in |
-| `working_hours` | Float (computed) | Hours between check_in and check_out |
-| `status` | Selection | See below |
+| `worked_hours` | Float (computed, stored) | (check_out - check_in) in hours |
+| `status` | Selection | see below |
 | `notes` | Text | Optional |
 
-**Status values (stable):**
+**`status` values (stable — do not rename):**
 ```
 present   → Present
 absent    → Absent
@@ -116,87 +105,138 @@ half_day  → Half Day
 leave     → Leave
 ```
 
-**Integration point with Leave (for Kunam):**
-When a leave request is approved, attendance records for each day in the leave range should be set to `status = 'leave'`. The leave model (`leave.py`) has a comment marking the exact integration point. Implement `_sync_attendance_for_leave()` in your branch.
+**Button actions (type="object" in form view):**
+```
+action_check_in()              sets check_in, status = present
+action_check_out()             sets check_out, refines status
+```
+
+**API helper (for Kunam's programmatic use):**
+```python
+# Returns today's attendance record, creating it if it doesn't exist
+record = self.env['dayflow.attendance'].get_or_create_today(employee_id)
+```
+
+**Leave → Attendance integration point:**
+When a leave request is approved, `leave.py` calls `_sync_attendance_for_leave()` which
+writes `status = 'leave'` for each date in the range. Kunam can override this method
+in a new model file without touching `leave.py`.
 
 ---
 
-## 4. Leave Request
+## 3. Leave Request
 
 **Model:** `dayflow.leave.request`
-**Owner:** KUNAM
+**UI Owner:** Kunam
 
 | Field | Type | Notes |
 |-------|------|-------|
-| `employee_id` | Many2one → `hr.employee` | Required; defaults to logged-in employee |
-| `leave_type` | Selection | paid, sick, unpaid |
+| `employee_id` | Many2one `hr.employee` | Required; defaults to logged-in employee |
+| `leave_type` | Selection | `paid \| sick \| unpaid` |
 | `date_from` | Date | Required |
-| `date_to` | Date | Required; must be ≥ date_from |
-| `number_of_days` | Integer (computed) | Auto-calculated |
+| `date_to` | Date | Required; ≥ date_from |
+| `number_of_days` | Integer (computed, stored) | Auto-calculated |
 | `remarks` | Text | Employee fills this |
-| `status` | Selection | draft, approved, rejected |
-| `hr_comment` | Text | HR fills on approve/reject |
-| `approved_by` | Many2one → `res.users` | Set automatically |
+| `state` | Selection | `draft \| pending \| approved \| rejected` |
+| `hr_comment` | Text | HR/Admin fills on decision |
+| `approved_by` | Many2one `res.users` | Set automatically |
 | `approved_date` | Datetime | Set automatically |
 
-**Status values (stable):**
+**`state` values (stable — do not rename):**
 ```
-draft    → Pending
+draft    → Draft (initial state)
+pending  → Pending (submitted by employee)
 approved → Approved
 rejected → Rejected
 ```
 
-**Workflow methods (HR Admin required):**
+**Workflow methods (type="object" from form buttons):**
 ```python
-leave.action_approve()         # Approves; logs to audit
-leave.action_reject()          # Rejects; logs to audit
-leave.action_reset_to_draft()  # Reset rejected → pending
+action_submit()           # Employee: draft → pending
+action_approve()          # HR Admin: pending → approved
+action_reject()           # HR Admin: pending → rejected
+action_reset_to_draft()   # HR Admin: rejected/pending → draft
 ```
 
 ---
 
-## 5. Payroll
+## 4. Payroll
 
 **Model:** `dayflow.payroll`
 **Owner:** Mani
 
 | Field | Type | Notes |
 |-------|------|-------|
-| `employee_id` | Many2one → `hr.employee` | Required |
-| `currency_id` | Many2one → `res.currency` | Defaults to company currency |
+| `employee_id` | Many2one `hr.employee` | Required |
+| `pay_period` | Char | e.g. "August 2026" |
+| `currency_id` | Many2one `res.currency` | Defaults to company currency |
 | `basic_salary` | Monetary | Required |
-| `allowances` | Monetary | Default 0 |
-| `deductions` | Monetary | Default 0 |
-| `net_salary` | Monetary (computed) | basic + allowances - deductions |
-| `effective_date` | Date | Required |
-| `notes` | Text | HR only; not visible to employees |
+| `house_rent_allowance` | Monetary | Default 0 |
+| `transport_allowance` | Monetary | Default 0 |
+| `other_allowances` | Monetary | Default 0 |
+| `gross_salary` | Monetary (computed) | Sum of all earnings |
+| `provident_fund` | Monetary | Default 0 |
+| `tax_deduction` | Monetary | Default 0 |
+| `other_deductions` | Monetary | Default 0 |
+| `total_deductions` | Monetary (computed) | Sum of all deductions |
+| `net_salary` | Monetary (computed) | gross_salary - total_deductions |
+| `state` | Selection | `draft \| confirmed \| paid` |
+| `notes` | Text | HR internal — hidden from employees in views |
+
+**`state` values:**
+```
+draft     → Draft
+confirmed → Confirmed
+paid      → Paid
+```
+
+**Workflow methods (HR Admin only):**
+```python
+action_confirm()       # draft → confirmed
+action_mark_paid()     # confirmed → paid
+action_reset_draft()   # any → draft
+```
 
 **Permissions:**
-- Employees: **read own record only** — enforced at both ACL and model level
+- Employees: **read own record only** — enforced at both ACL and Python model `write()`
 - HR Admin: **full CRUD**
-
-**Salary changes are automatically audited** to `dayflow.audit.log`.
+- All salary field changes are **automatically audited** to `dayflow.audit.log`
 
 ---
 
-## 6. Audit Log
+## 5. Audit Log
 
 **Model:** `dayflow.audit.log`
 **Owner:** Mani
 
-Read-only. HR Admin can view, no one can create/edit/delete records manually.
-Written automatically by the system on: salary changes, leave approve/reject.
+Read-only for HR Admin via UI. Append-only — no manual create/edit/delete.
+Written automatically by `employee.py`, `payroll.py`, and `leave.py`.
 
-**To log from your own model code:**
+| Field | Type | Notes |
+|-------|------|-------|
+| `user_id` | Many2one `res.users` | Who made the change |
+| `timestamp` | Datetime | When (auto) |
+| `model_name` | Char | e.g. `dayflow.payroll` |
+| `record_id` | Integer | ID of changed record |
+| `record_name` | Char | Human-readable label |
+| `record_ref` | Char (computed) | `"model#id (label)"` — shown in list view |
+| `action` | Selection | `create\|update\|approve\|reject\|submit\|confirm\|archive\|other` |
+| `field_name` | Char | Which field changed |
+| `old_value` | Char | Previous value |
+| `new_value` | Char | New value |
+
+**To write from your own model:**
 ```python
-self.env['dayflow.audit.log'].sudo().log(
-    model='dayflow.leave.request',   # technical model name
-    res_id=record.id,
-    action='approve',                # create|update|approve|reject|archive|other
-    field_name='status',
-    old_value='draft',
-    new_value='approved',
-)
+self.env['dayflow.audit.log'].sudo().create({
+    'user_id':     self.env.uid,
+    'model_name':  self._name,
+    'record_id':   record.id,
+    'record_name': record.display_name,
+    'action':      'approve',         # use one of the selection values
+    'field_name':  'state',
+    'old_value':   'pending',
+    'new_value':   'approved',
+})
 ```
 
 ---
@@ -210,40 +250,48 @@ self.env['dayflow.audit.log'].sudo().log(
 | Anita Reddy | anita.reddy@dayflow.demo | Employee |
 | Kiran Patel | kiran.patel@dayflow.demo | Employee |
 
+**Demo states pre-loaded:**
+- Kiran: sick leave APPROVED + attendance marked as leave
+- Ravi: paid leave in DRAFT (demo: submit + HR approves live)
+- Anita: unpaid leave REJECTED
+- Ravi & Anita: payroll CONFIRMED; Kiran: payroll DRAFT (demo: HR confirms live)
+
 ---
 
 ## How to Install
 
-1. Place `dayflow/` in your Odoo `addons` path (e.g. `/odoo/custom-addons/dayflow`)
-2. Restart Odoo: `./odoo-bin -c odoo.conf`
-3. Go to **Settings → Apps**, search `Dayflow`, click **Install**
-4. For demo data: enable Developer Mode, then install with demo OR:
-   ```bash
-   ./odoo-bin -d your_db --init dayflow
-   ```
-   Demo data loads automatically when the DB is created with `--demo=True` or via Settings → Technical → Load Demo Data.
+1. Copy `dayflow/` into your Odoo custom addons path, e.g. `/odoo/custom-addons/dayflow`
+2. Restart Odoo server
+3. Enable Developer Mode: Settings → General Settings → Developer Tools → Activate
+4. Go to **Apps → Update Apps List**
+5. Search for **Dayflow**, click **Install**
+
+Demo data loads automatically on first install. To reload:
+```bash
+./odoo-bin -d your_db -u dayflow
+```
 
 ---
 
-## Runtime Test Status
+## Static Consistency Checks (done)
 
-> These models have NOT been tested against a live Odoo runtime.
-> Code inspection and static XML validation only.
-> Runtime testing is owned by Harshith.
+- [x] All Python field names match XML view field references
+- [x] All security group XML IDs use `group_dayflow_hr_admin` consistently
+- [x] `ir.model.access.csv` group IDs prefixed with `dayflow.`
+- [x] Demo data uses `df_employee_id`, `df_employment_type`, `df_joining_date`, `state` (not `status`) on leave
+- [x] Payroll demo data uses `house_rent_allowance`, `provident_fund` etc. matching model
+- [x] Leave model `state` and views `state` consistent
+- [x] `number_of_days` used in both leave model and leave view
+- [x] Audit log `record_ref` field exists in both model and view
+- [x] Payroll actions `action_confirm`, `action_mark_paid`, `action_reset_draft` defined in model and called in view
 
-Static checks confirmed:
-- [x] Python model syntax valid
-- [x] All `_inherit` / `_name` references consistent
-- [x] All field names consistent between models, views, and demo data
-- [x] Group references use canonical `group_dayflow_hr_admin` throughout
-- [x] `df_employee_id` used as canonical employee ID field everywhere
-- [x] No cross-branch dependencies (attendance/leave stubs are clean)
-- [x] `ir.model.access.csv` group references prefixed with `dayflow.`
+## Runtime Tests Required (Harshith / Suraj)
 
-Runtime tests required (Harshith / Suraj):
-- [ ] Module installs without errors
-- [ ] Employee record creation with df_employee_id uniqueness enforcement
-- [ ] Payroll create blocked for employee users
-- [ ] Leave approve/reject workflow
-- [ ] Audit log entries created on salary change
-- [ ] Record rule isolation (employee cannot see other employees' data)
+- [ ] Module installs without errors on Odoo 16
+- [ ] `df_employee_id` unique constraint fires on duplicate
+- [ ] Employee cannot access another employee's attendance (record rule isolation)
+- [ ] Employee cannot write payroll — `UserError` raised
+- [ ] Leave workflow: draft → pending → approved (check attendance auto-marked as leave)
+- [ ] Leave workflow: draft → pending → rejected
+- [ ] Audit log entries created on salary field change
+- [ ] HR Admin can see all employees, all attendance, all leave, all payroll
