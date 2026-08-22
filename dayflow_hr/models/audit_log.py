@@ -32,7 +32,6 @@ class DayflowAuditLog(models.Model):
     _name = 'dayflow.audit.log'
     _description = 'Dayflow HR Audit Log'
     _order = 'timestamp desc'
-    _log_access = False   # suppress Odoo's own write_date/create_date overhead on this model
 
     user_id = fields.Many2one(
         comodel_name='res.users',
@@ -66,7 +65,7 @@ class DayflowAuditLog(models.Model):
     record_ref = fields.Char(
         string='Reference',
         compute='_compute_record_ref',
-        store=True,
+        store=False,
         readonly=True,
     )
     action = fields.Selection(

@@ -21,9 +21,7 @@ Team:
     'depends': [
         'base',
         'mail',           # chatter / tracking on leave, payroll
-        'hr',
-        'hr_attendance',
-        'hr_holidays',
+        'hr',             # hr.employee base model
     ],
     'data': [
         # ── Security (load first — groups must exist before views reference them) ──

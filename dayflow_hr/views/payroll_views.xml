@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Dayflow Payroll Views
+    Dayflow Payroll Views — Odoo 17 compatible
     Owner: Mani
     Employees: read-only view of own payroll.
     HR Admin: full form with confirm/paid workflow.
@@ -12,10 +12,10 @@
         <field name="name">dayflow.payroll.tree</field>
         <field name="model">dayflow.payroll</field>
         <field name="arch" type="xml">
-            <tree string="Payroll"
-                  decoration-success="state=='paid'"
-                  decoration-warning="state=='confirmed'"
-                  decoration-muted="state=='draft'">
+            <list string="Payroll"
+                  decoration-success="state == 'paid'"
+                  decoration-warning="state == 'confirmed'"
+                  decoration-muted="state == 'draft'">
                 <field name="employee_id"/>
                 <field name="pay_period"/>
                 <field name="basic_salary"/>
@@ -23,7 +23,7 @@
                 <field name="total_deductions"/>
                 <field name="net_salary"/>
                 <field name="state"/>
-            </tree>
+            </list>
         </field>
     </record>
 
@@ -39,18 +39,18 @@
                             type="object"
                             class="btn-primary"
                             groups="dayflow_hr.group_dayflow_hr_admin"
-                            attrs="{'invisible': [('state', '!=', 'draft')]}"/>
+                            invisible="state != 'draft'"/>
                     <button name="action_mark_paid"
                             string="Mark as Paid"
                             type="object"
                             class="btn-success"
                             groups="dayflow_hr.group_dayflow_hr_admin"
-                            attrs="{'invisible': [('state', '!=', 'confirmed')]}"/>
+                            invisible="state != 'confirmed'"/>
                     <button name="action_reset_draft"
                             string="Reset to Draft"
                             type="object"
                             groups="dayflow_hr.group_dayflow_hr_admin"
-                            attrs="{'invisible': [('state', '=', 'draft')]}"/>
+                            invisible="state == 'draft'"/>
                     <field name="state" widget="statusbar"
                            statusbar_visible="draft,confirmed,paid"/>
                 </header>
@@ -58,30 +58,39 @@
                     <group>
                         <group string="Header">
                             <field name="employee_id"
-                                   attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                                   readonly="state != 'draft'"/>
                             <field name="pay_period"
-                                   attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                                   readonly="state != 'draft'"/>
                             <field name="currency_id"
-                                   attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                                   readonly="state != 'draft'"
+                                   groups="dayflow_hr.group_dayflow_hr_admin"/>
                         </group>
                     </group>
                     <group string="Earnings">
-                        <field name="basic_salary"/>
-                        <field name="house_rent_allowance"/>
-                        <field name="transport_allowance"/>
-                        <field name="other_allowances"/>
+                        <field name="basic_salary"
+                               readonly="not context.get('is_hr_admin', False)"/>
+                        <field name="house_rent_allowance"
+                               readonly="not context.get('is_hr_admin', False)"/>
+                        <field name="transport_allowance"
+                               readonly="not context.get('is_hr_admin', False)"/>
+                        <field name="other_allowances"
+                               readonly="not context.get('is_hr_admin', False)"/>
                         <field name="gross_salary" readonly="1"/>
                     </group>
                     <group string="Deductions">
-                        <field name="provident_fund"/>
-                        <field name="tax_deduction"/>
-                        <field name="other_deductions"/>
+                        <field name="provident_fund"
+                               readonly="not context.get('is_hr_admin', False)"/>
+                        <field name="tax_deduction"
+                               readonly="not context.get('is_hr_admin', False)"/>
+                        <field name="other_deductions"
+                               readonly="not context.get('is_hr_admin', False)"/>
                         <field name="total_deductions" readonly="1"/>
                     </group>
                     <group string="Net">
                         <field name="net_salary" readonly="1"/>
                     </group>
-                    <group string="Notes" groups="dayflow_hr.group_dayflow_hr_admin">
+                    <group string="Notes"
+                           groups="dayflow_hr.group_dayflow_hr_admin">
                         <field name="notes" nolabel="1"/>
                     </group>
                 </sheet>
@@ -102,11 +111,13 @@
             <search string="Search Payroll">
                 <field name="employee_id"/>
                 <field name="pay_period"/>
-                <filter string="Draft"     name="draft"     domain="[('state','=','draft')]"/>
-                <filter string="Confirmed" name="confirmed" domain="[('state','=','confirmed')]"/>
-                <filter string="Paid"      name="paid"      domain="[('state','=','paid')]"/>
-                <filter string="My Payroll" name="my_payroll"
-                        domain="[('employee_id.user_id','=',uid)]"/>
+                <filter string="My Payroll"
+                        name="my_payroll"
+                        domain="[('employee_id.user_id', '=', uid)]"/>
+                <separator/>
+                <filter string="Draft"     name="draft"     domain="[('state', '=', 'draft')]"/>
+                <filter string="Confirmed" name="confirmed" domain="[('state', '=', 'confirmed')]"/>
+                <filter string="Paid"      name="paid"      domain="[('state', '=', 'paid')]"/>
                 <group expand="0" string="Group By">
                     <filter string="Employee"   name="grp_employee"   context="{'group_by': 'employee_id'}"/>
                     <filter string="Pay Period" name="grp_pay_period" context="{'group_by': 'pay_period'}"/>
@@ -120,7 +131,7 @@
     <record id="action_dayflow_payroll" model="ir.actions.act_window">
         <field name="name">Payroll</field>
         <field name="res_model">dayflow.payroll</field>
-        <field name="view_mode">tree,form</field>
+        <field name="view_mode">list,form</field>
         <field name="search_view_id" ref="view_dayflow_payroll_search"/>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">

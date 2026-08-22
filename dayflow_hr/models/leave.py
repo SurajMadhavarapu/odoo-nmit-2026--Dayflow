@@ -182,7 +182,10 @@ class DayflowLeaveRequest(models.Model):
             )
             if self.employee_id != emp:
                 raise UserError(_('You can only submit your own leave requests.'))
-        self.write({'state': 'pending'})
+        # Use sudo() to bypass the write() guard which blocks state changes
+        # for non-HR users. The guard is correct for direct edits; action_submit
+        # is the controlled transition path and has already verified ownership above.
+        self.sudo().write({'state': 'pending'})
         self.message_post(body=_('Leave request submitted — awaiting HR approval.'))
         self._audit('submit')
 
@@ -274,14 +277,17 @@ class DayflowLeaveRequest(models.Model):
     def write(self, vals):
         is_hr = self.env.user.has_group('dayflow_hr.group_dayflow_hr_admin')
         if not is_hr and not self.env.su:
+            # Block direct writes to HR-only decision fields
             blocked = {'hr_comment', 'approved_by', 'approved_date'} & set(vals.keys())
             if blocked:
                 raise UserError(
                     _('You are not authorised to modify HR-only fields: %s')
                     % ', '.join(blocked)
                 )
-            if 'state' in vals and vals['state'] != 'pending':
+            # Block ALL direct state changes for employees.
+            # Employees must use action_submit() which uses sudo() internally.
+            if 'state' in vals:
                 raise UserError(
-                    _('Use the Submit button to change leave request status.')
+                    _('Please use the Submit / Approve / Reject buttons to change leave status.')
                 )
         return super().write(vals)
