@@ -9,7 +9,7 @@
             <link rel="preconnect" href="https://fonts.googleapis.com"/>
             <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="crossorigin"/>
             <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@600;800&amp;family=Space+Grotesk:wght@600;700;800&amp;family=Inter:wght@400;600;700;800;900&amp;display=swap" rel="stylesheet"/>
-            <style>
+            <style><![CDATA[
                 :root {
                     --bg-canvas: #f4f4ee;
                     --bg-card: #ffffff;
@@ -79,6 +79,7 @@
                     letter-spacing: -0.03em;
                     text-transform: uppercase;
                     color: var(--text-black);
+                    cursor: pointer;
                 }
 
                 .brand-badge {
@@ -116,17 +117,15 @@
                     text-transform: uppercase;
                     letter-spacing: 0.05em;
                     box-shadow: 3px 3px 0px #000;
+                    display: inline-block;
                 }
 
-                .badge-employee {
-                    background: var(--accent-green);
-                    color: #000;
-                }
-
-                .badge-admin {
-                    background: var(--accent-purple);
-                    color: #fff;
-                }
+                .badge-employee { background: var(--accent-green); color: #000; }
+                .badge-admin { background: var(--accent-purple); color: #fff; }
+                .badge-yellow { background: var(--accent-yellow); color: #000; }
+                .badge-rose { background: var(--accent-rose); color: #fff; }
+                .badge-blue { background: var(--accent-blue); color: #fff; }
+                .badge-neutral { background: #e5e7eb; color: #000; }
 
                 .btn-brutal {
                     background: var(--bg-card);
@@ -214,7 +213,7 @@
                     margin-bottom: 0.5rem;
                 }
 
-                .form-input, .form-select {
+                .form-input, .form-select, .form-textarea {
                     width: 100%;
                     padding: 0.85rem 1rem;
                     background: #ffffff;
@@ -228,7 +227,7 @@
                     transition: all 0.1s ease;
                 }
 
-                .form-input:focus, .form-select:focus {
+                .form-input:focus, .form-select:focus, .form-textarea:focus {
                     background: #fffdf0;
                     transform: translate(-1px, -1px);
                     box-shadow: 5px 5px 0px #000;
@@ -275,15 +274,20 @@
                     gap: 0.75rem;
                 }
 
-                .btn-action-big:hover {
+                .btn-action-big:hover:not(:disabled) {
                     transform: translate(-3px, -3px);
                     box-shadow: 9px 9px 0px #000;
                     background: #ffe600;
                 }
 
-                .btn-action-big:active {
+                .btn-action-big:active:not(:disabled) {
                     transform: translate(2px, 2px);
                     box-shadow: 2px 2px 0px #000;
+                }
+
+                .btn-action-big.checkout-btn {
+                    background: var(--accent-rose);
+                    color: #fff;
                 }
 
                 .alert {
@@ -366,7 +370,7 @@
 
                 .grid-2x2 {
                     display: grid;
-                    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
                     gap: 1.75rem;
                 }
 
@@ -376,6 +380,9 @@
                     padding: 2rem;
                     box-shadow: var(--shadow-hard);
                     transition: transform 0.1s ease, box-shadow 0.1s ease;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: space-between;
                 }
 
                 .brutal-card:hover {
@@ -400,7 +407,7 @@
                 }
 
                 .stat-box {
-                    font-size: 3.5rem;
+                    font-size: 3.2rem;
                     font-weight: 900;
                     line-height: 1;
                     margin: 1rem 0;
@@ -439,6 +446,103 @@
                     margin-bottom: 2rem;
                 }
 
+                /* Tables & Lists */
+                .brutal-table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    border: 3px solid #000;
+                    margin-top: 1rem;
+                    background: #fff;
+                }
+
+                .brutal-table th, .brutal-table td {
+                    border: 2px solid #000;
+                    padding: 0.75rem 1rem;
+                    font-weight: 700;
+                    text-align: left;
+                    font-size: 0.9rem;
+                }
+
+                .brutal-table th {
+                    background: var(--accent-yellow);
+                    font-weight: 900;
+                    text-transform: uppercase;
+                    letter-spacing: 0.03em;
+                }
+
+                .brutal-table tr:nth-child(even) {
+                    background: #f9f9f5;
+                }
+
+                /* Modal Overlay */
+                .modal-overlay {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100vw;
+                    height: 100vh;
+                    background: rgba(0, 0, 0, 0.6);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    z-index: 2000;
+                    padding: 1.5rem;
+                    animation: fadeIn 0.15s ease-out;
+                }
+
+                @keyframes fadeIn {
+                    from { opacity: 0; }
+                    to { opacity: 1; }
+                }
+
+                .modal-box {
+                    width: 100%;
+                    max-width: 650px;
+                    max-height: 90vh;
+                    overflow-y: auto;
+                    background: #fff;
+                    border: 5px solid #000;
+                    padding: 2.5rem;
+                    box-shadow: 12px 12px 0px #000;
+                    animation: slideUp 0.15s ease-out;
+                }
+
+                .modal-header {
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    border-bottom: 4px solid #000;
+                    padding-bottom: 1rem;
+                    margin-bottom: 1.5rem;
+                }
+
+                .modal-title {
+                    font-size: 1.6rem;
+                    font-weight: 900;
+                    text-transform: uppercase;
+                    letter-spacing: -0.02em;
+                }
+
+                .btn-close-modal {
+                    background: var(--accent-rose);
+                    color: #fff;
+                    border: 3px solid #000;
+                    width: 38px;
+                    height: 38px;
+                    font-weight: 900;
+                    font-size: 1.1rem;
+                    cursor: pointer;
+                    box-shadow: 3px 3px 0px #000;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+
+                .btn-close-modal:hover {
+                    transform: translate(-2px, -2px);
+                    box-shadow: 5px 5px 0px #000;
+                }
+
                 /* Loader */
                 .spinner-block {
                     width: 24px;
@@ -469,7 +573,7 @@
                     box-shadow: var(--shadow-large);
                     text-align: center;
                 }
-            </style>
+            ]]></style>
         </head>
         <body>
             <div id="app-root">
@@ -483,7 +587,7 @@
             </div>
 
             <script type="text/javascript">
-            //<![CDATA[
+            <![CDATA[
                 // Single Page Application Client State
                 const state = {
                     view: 'INITIALIZING', // 'LOGIN' | 'SIGNUP' | 'EMPLOYEE_DASHBOARD' | 'HR_ADMIN_DASHBOARD'
@@ -491,16 +595,19 @@
                     loading: false,
                     error: null,
                     successMsg: null,
-                    checkedIn: false,
-                    signupForm: {
-                        empId: '',
-                        name: '',
-                        email: '',
-                        role: 'Employee'
-                    },
-                    loginForm: {
-                        email: ''
-                    }
+                    
+                    // Live Domain Data
+                    profile: null,
+                    attendance: null,
+                    leaves: null,
+                    payroll: null,
+                    employeesList: null,
+
+                    // Modals
+                    activeModal: null, // 'APPLY_LEAVE' | 'LEAVE_HISTORY' | 'PAYROLL_SLIP' | 'EMPLOYEE_DIRECTORY' | 'ATTENDANCE_LOGS' | 'PENDING_LEAVES' | 'PAYROLL_OVERVIEW'
+                    
+                    signupForm: { empId: '', name: '', email: '', role: 'Employee' },
+                    loginForm: { email: '' }
                 };
 
                 // Helper to execute JSON-RPC API requests to Dayflow Odoo backend
@@ -542,6 +649,7 @@
                         const result = await callApi('/dayflow/auth/me');
                         if (result && result.status === 'authenticated' && result.uid) {
                             state.user = result;
+                            await loadDashboardData();
                             state.view = result.role === 'hr_admin' ? 'HR_ADMIN_DASHBOARD' : 'EMPLOYEE_DASHBOARD';
                         } else {
                             state.view = 'LOGIN';
@@ -553,13 +661,35 @@
                     }
                 }
 
+                // Fetch real backend data for Employee or HR Admin
+                async function loadDashboardData() {
+                    try {
+                        const [profRes, attRes, leaveRes, payRes] = await Promise.all([
+                            callApi('/dayflow/api/profile').catch(() => null),
+                            callApi('/dayflow/api/attendance/me').catch(() => null),
+                            callApi('/dayflow/api/leave/me').catch(() => null),
+                            callApi('/dayflow/api/payroll/me').catch(() => null),
+                        ]);
+
+                        if (profRes && profRes.status === 'success') state.profile = profRes.data || profRes.profile;
+                        if (attRes && attRes.status === 'success') state.attendance = attRes.data || attRes;
+                        if (leaveRes && leaveRes.status === 'success') state.leaves = leaveRes.data || leaveRes;
+                        if (payRes && payRes.status === 'success') state.payroll = payRes.data || payRes;
+
+                        if (state.user && state.user.role === 'hr_admin') {
+                            const empRes = await callApi('/dayflow/api/employees').catch(() => null);
+                            if (empRes && empRes.status === 'success') state.employeesList = empRes.data?.employees || empRes.employees;
+                        }
+                    } catch (err) {
+                        console.warn('Dashboard data fetch warning:', err);
+                    }
+                }
+
                 // Action: Login Submit
                 async function handleLogin(e) {
                     e.preventDefault();
-                    
                     const emailInput = document.getElementById('login-email');
                     const passwordInput = document.getElementById('login-password');
-
                     const email = emailInput ? emailInput.value.trim() : '';
                     const password = passwordInput ? passwordInput.value.trim() : '';
 
@@ -580,6 +710,7 @@
                         const result = await callApi('/dayflow/auth/login', { login: email, password: password });
                         if (result && result.status === 'success') {
                             state.user = result;
+                            await loadDashboardData();
                             state.view = result.role === 'hr_admin' ? 'HR_ADMIN_DASHBOARD' : 'EMPLOYEE_DASHBOARD';
                             state.error = null;
                             state.loginForm = { email: '' };
@@ -597,7 +728,6 @@
                 // Action: Signup Submit
                 async function handleSignup(e) {
                     e.preventDefault();
-
                     const empIdInput = document.getElementById('signup-empid');
                     const nameInput = document.getElementById('signup-name');
                     const emailInput = document.getElementById('signup-email');
@@ -647,6 +777,7 @@
                             const loginRes = await callApi('/dayflow/auth/login', { login: email, password: password });
                             if (loginRes && loginRes.status === 'success') {
                                 state.user = loginRes;
+                                await loadDashboardData();
                                 state.view = loginRes.role === 'hr_admin' ? 'HR_ADMIN_DASHBOARD' : 'EMPLOYEE_DASHBOARD';
                                 state.successMsg = null;
                             } else {
@@ -674,6 +805,12 @@
                         console.warn('Logout API call exception:', err);
                     } finally {
                         state.user = null;
+                        state.profile = null;
+                        state.attendance = null;
+                        state.leaves = null;
+                        state.payroll = null;
+                        state.employeesList = null;
+                        state.activeModal = null;
                         state.view = 'LOGIN';
                         state.loading = false;
                         state.error = null;
@@ -682,9 +819,127 @@
                     }
                 }
 
-                // Action: Toggle Employee Attendance Check In / Check Out
-                function toggleCheckIn() {
-                    state.checkedIn = !state.checkedIn;
+                // Action: Attendance Check In API Call
+                async function handleCheckIn() {
+                    state.loading = true;
+                    render();
+                    try {
+                        const res = await callApi('/dayflow/api/attendance/checkin');
+                        if (res && res.status === 'success') {
+                            await loadDashboardData();
+                        } else {
+                            alert(res.message || 'Check-in failed');
+                        }
+                    } catch (err) {
+                        alert(err.message || 'Check-in error');
+                    } finally {
+                        state.loading = false;
+                        render();
+                    }
+                }
+
+                // Action: Attendance Check Out API Call
+                async function handleCheckOut() {
+                    state.loading = true;
+                    render();
+                    try {
+                        const res = await callApi('/dayflow/api/attendance/checkout');
+                        if (res && res.status === 'success') {
+                            await loadDashboardData();
+                        } else {
+                            alert(res.message || 'Check-out failed');
+                        }
+                    } catch (err) {
+                        alert(err.message || 'Check-out error');
+                    } finally {
+                        state.loading = false;
+                        render();
+                    }
+                }
+
+                // Action: Leave Submit Form API Call
+                async function handleApplyLeaveSubmit(e) {
+                    e.preventDefault();
+                    const leaveType = document.getElementById('leave-type').value;
+                    const dateFrom = document.getElementById('leave-from').value;
+                    const dateTo = document.getElementById('leave-to').value;
+                    const remarks = document.getElementById('leave-remarks').value;
+
+                    if (!leaveType || !dateFrom || !dateTo) {
+                        alert('Please fill all required fields');
+                        return;
+                    }
+
+                    state.loading = true;
+                    render();
+                    try {
+                        const res = await callApi('/dayflow/api/leave', {
+                            leave_type: leaveType,
+                            date_from: dateFrom,
+                            date_to: dateTo,
+                            remarks: remarks
+                        });
+
+                        if (res && res.status === 'success') {
+                            state.activeModal = null;
+                            await loadDashboardData();
+                        } else {
+                            alert(res.message || 'Leave submission failed.');
+                        }
+                    } catch (err) {
+                        alert(err.message || 'Leave submission failed.');
+                    } finally {
+                        state.loading = false;
+                        render();
+                    }
+                }
+
+                // Action: HR Admin Leave Approve API Call
+                async function handleApproveLeave(leaveId) {
+                    state.loading = true;
+                    render();
+                    try {
+                        const res = await callApi(`/dayflow/api/leave/${leaveId}/approve`, { id: leaveId });
+                        if (res && res.status === 'success') {
+                            await loadDashboardData();
+                        } else {
+                            alert(res.message || 'Approval failed.');
+                        }
+                    } catch (err) {
+                        alert(err.message || 'Approval error.');
+                    } finally {
+                        state.loading = false;
+                        render();
+                    }
+                }
+
+                // Action: HR Admin Leave Reject API Call
+                async function handleRejectLeave(leaveId) {
+                    state.loading = true;
+                    render();
+                    try {
+                        const res = await callApi(`/dayflow/api/leave/${leaveId}/reject`, { id: leaveId });
+                        if (res && res.status === 'success') {
+                            await loadDashboardData();
+                        } else {
+                            alert(res.message || 'Rejection failed.');
+                        }
+                    } catch (err) {
+                        alert(err.message || 'Rejection error.');
+                    } finally {
+                        state.loading = false;
+                        render();
+                    }
+                }
+
+                // Open & Close Modals
+                function openModal(name) {
+                    state.activeModal = name;
+                    render();
+                }
+
+                function closeModal() {
+                    state.activeModal = null;
                     render();
                 }
 
@@ -711,7 +966,7 @@
                     // Navbar Header for Authenticated Session
                     const navbarHtml = state.user ? `
                         <header class="navbar">
-                            <div class="brand-logo">
+                            <div class="brand-logo" onclick="loadDashboardData().then(render)">
                                 DAYFLOW
                                 <span class="brand-badge">HRMS</span>
                                 <span class="tagline-text">| Every workday, perfectly aligned.</span>
@@ -735,7 +990,7 @@
                                 <div class="auth-card">
                                     <div class="auth-header">
                                         <div class="brand-logo" style="margin-bottom: 0.75rem;">
-                                             DAYFLOW
+                                            DAYFLOW
                                             <span class="brand-badge">SYSTEM</span>
                                         </div>
                                         <h1 class="auth-title">AUTHENTICATE</h1>
@@ -755,7 +1010,7 @@
                                             <input type="password" id="login-password" class="form-input" placeholder="••••••••" required="required" autocomplete="current-password" />
                                         </div>
                                         <button type="submit" class="btn-submit" ${state.loading ? 'disabled' : ''}>
-                                             ${state.loading ? '<span class="spinner-block"></span> AUTHENTICATING...' : 'ACCESS SYSTEM'}
+                                            ${state.loading ? '<span class="spinner-block"></span> AUTHENTICATING...' : 'ACCESS SYSTEM'}
                                         </button>
                                     </form>
 
@@ -818,6 +1073,20 @@
                             </div>
                         `;
                     } else if (state.view === 'EMPLOYEE_DASHBOARD') {
+                        const attToday = state.attendance?.today || {};
+                        const isCheckedIn = attToday.is_checked_in;
+                        const checkInTime = attToday.check_in ? attToday.check_in.split(' ')[1]?.slice(0, 5) : 'NOT LOGGED';
+                        const workedHours = attToday.worked_hours || 0;
+                        const attStatus = (attToday.status || 'absent').toUpperCase().replace('_', ' ');
+
+                        const pendingLeaves = state.leaves?.pending_count || 0;
+                        const approvedLeaves = state.leaves?.approved_count || 0;
+
+                        const latestPayroll = state.payroll?.latest;
+                        const salaryText = latestPayroll ? `${latestPayroll.currency}${latestPayroll.net_salary.toLocaleString()}` : '₹0';
+                        const salaryPeriod = latestPayroll ? latestPayroll.pay_period : 'N/A';
+                        const salaryState = (latestPayroll?.state || 'DRAFT').toUpperCase();
+
                         contentHtml = `
                             ${navbarHtml}
                             <main class="dashboard-container">
@@ -834,64 +1103,99 @@
                                 <div class="grid-2x2">
                                     <!-- TODAY'S ATTENDANCE -->
                                     <div class="brutal-card">
-                                        <div class="card-header-bar">
-                                            <div class="card-title">⏱️ TODAY'S ATTENDANCE</div>
-                                            <span class="badge-role badge-employee">${state.checkedIn ? 'CHECKED IN' : 'PRESENT'}</span>
+                                        <div>
+                                            <div class="card-header-bar">
+                                                <div class="card-title">⏱️ TODAY'S ATTENDANCE</div>
+                                                <span class="badge-role ${isCheckedIn ? 'badge-employee' : 'badge-neutral'}">${attStatus}</span>
+                                            </div>
+                                            <div style="margin: 1.25rem 0;">
+                                                ${isCheckedIn ? `
+                                                    <button class="btn-action-big checkout-btn" onclick="handleCheckOut()">
+                                                        ⏹️ [ CHECK OUT ]
+                                                    </button>
+                                                ` : `
+                                                    <button class="btn-action-big" onclick="handleCheckIn()" ${attToday.check_out ? 'disabled style=\"opacity:0.6; cursor:not-allowed;\"' : ''}>
+                                                        ${attToday.check_out ? '✓ [ COMPLETED TODAY ]' : '▶️ [ CHECK IN ]'}
+                                                    </button>
+                                                `}
+                                            </div>
+                                            <div class="mono" style="font-weight: 800; font-size: 1rem; margin-bottom: 0.5rem;">
+                                                CHECK-IN TIME: <span style="background: var(--accent-green); padding: 0.2rem 0.6rem; border: 2px solid #000;">${checkInTime}</span>
+                                            </div>
+                                            <div class="mono" style="font-weight: 800; font-size: 0.9rem; color: var(--text-muted);">
+                                                WORKED TODAY: ${workedHours} HRS
+                                            </div>
                                         </div>
-                                        <div style="margin: 1.25rem 0;">
-                                            <button class="btn-action-big" onclick="toggleCheckIn()">
-                                                ${state.checkedIn ? '⏹️ [ CHECK OUT ]' : '▶️ [ CHECK IN ]'}
-                                            </button>
-                                        </div>
-                                        <div class="mono" style="font-weight: 800; font-size: 1rem;">
-                                            LOGGED TIME: <span style="background: var(--accent-green); padding: 0.2rem 0.6rem; border: 2px solid #000;">09:02 AM</span>
+                                        <div style="margin-top: 1.5rem; border-top: 2px solid #000; padding-top: 0.75rem;">
+                                            <button class="btn-brutal" style="font-size: 0.8rem; padding: 0.4rem 0.8rem;" onclick="openModal('ATTENDANCE_LOGS')">VIEW ATTENDANCE LOGS</button>
                                         </div>
                                     </div>
 
                                     <!-- LEAVE STATUS -->
                                     <div class="brutal-card">
-                                        <div class="card-header-bar">
-                                            <div class="card-title">📅 LEAVE STATUS</div>
-                                            <span class="badge-role" style="background: var(--accent-yellow); color: #000;">ACTIVE</span>
+                                        <div>
+                                            <div class="card-header-bar">
+                                                <div class="card-title">📅 LEAVE STATUS</div>
+                                                <span class="badge-role badge-yellow">LEAVES</span>
+                                            </div>
+                                            <div class="stat-box">
+                                                <span class="stat-box-yellow">${pendingLeaves} PENDING</span>
+                                            </div>
+                                            <div style="font-weight: 800; font-size: 0.95rem; text-transform: uppercase;">
+                                                APPROVED THIS YEAR: ${approvedLeaves} REQUESTS
+                                            </div>
                                         </div>
-                                        <div class="stat-box">
-                                            <span class="stat-box-yellow">2 PENDING</span>
-                                        </div>
-                                        <div style="font-weight: 800; font-size: 0.95rem; text-transform: uppercase;">
-                                            REMAINING BALANCE: 14 DAYS AVAILABLE
+                                        <div style="margin-top: 1.5rem; border-top: 2px solid #000; padding-top: 0.75rem; display: flex; gap: 0.5rem;">
+                                            <button class="btn-brutal" style="font-size: 0.8rem; padding: 0.4rem 0.8rem; background: var(--accent-yellow);" onclick="openModal('APPLY_LEAVE')">+ APPLY LEAVE</button>
+                                            <button class="btn-brutal" style="font-size: 0.8rem; padding: 0.4rem 0.8rem;" onclick="openModal('LEAVE_HISTORY')">HISTORY</button>
                                         </div>
                                     </div>
 
                                     <!-- PAYROLL SUMMARY -->
                                     <div class="brutal-card">
-                                        <div class="card-header-bar">
-                                            <div class="card-title">💳 PAYROLL / SALARY</div>
-                                            <span class="badge-role badge-employee">VERIFIED</span>
+                                        <div>
+                                            <div class="card-header-bar">
+                                                <div class="card-title">💳 PAYROLL / SALARY</div>
+                                                <span class="badge-role badge-employee">${salaryState}</span>
+                                            </div>
+                                            <div class="stat-box">
+                                                <span class="stat-box-green">${salaryText}</span>
+                                            </div>
+                                            <div style="font-weight: 800; font-size: 0.95rem; text-transform: uppercase;">
+                                                PERIOD: ${salaryPeriod} | NET DISPATCH
+                                            </div>
                                         </div>
-                                        <div class="stat-box">
-                                            <span class="stat-box-green">₹75,000</span>
-                                        </div>
-                                        <div style="font-weight: 800; font-size: 0.95rem; text-transform: uppercase;">
-                                            MONTHLY SALARY STATEMENT READY FOR DOWNLOAD
+                                        <div style="margin-top: 1.5rem; border-top: 2px solid #000; padding-top: 0.75rem;">
+                                            <button class="btn-brutal" style="font-size: 0.8rem; padding: 0.4rem 0.8rem;" onclick="openModal('PAYROLL_SLIP')">VIEW SALARY SLIP</button>
                                         </div>
                                     </div>
 
                                     <!-- PROFILE CONTRACT -->
                                     <div class="brutal-card">
-                                        <div class="card-header-bar">
-                                            <div class="card-title">👤 PROFILE INFO</div>
-                                            <span class="badge-role" style="background: var(--accent-blue); color: #fff;">LINKED</span>
-                                        </div>
-                                        <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem; font-weight: 700;">
-                                            <div>FULL NAME: <strong>${escapeHtml(state.user.name)}</strong></div>
-                                            <div>CANONICAL CODE: <span class="mono" style="background: #fff; padding: 0.1rem 0.4rem; border: 2px solid #000;">${escapeHtml(state.user.employee_code || 'N/A')}</span></div>
-                                            <div>SECURITY ROLE: <strong>${escapeHtml(state.user.role.toUpperCase())}</strong></div>
+                                        <div>
+                                            <div class="card-header-bar">
+                                                <div class="card-title">👤 PROFILE INFO</div>
+                                                <span class="badge-role badge-blue">LINKED</span>
+                                            </div>
+                                            <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem; font-weight: 700;">
+                                                <div>FULL NAME: <strong>${escapeHtml(state.profile?.name || state.user.name)}</strong></div>
+                                                <div>CANONICAL CODE: <span class="mono" style="background: #fff; padding: 0.1rem 0.4rem; border: 2px solid #000;">${escapeHtml(state.profile?.employee_code || state.user.employee_code || 'N/A')}</span></div>
+                                                <div>EMPLOYMENT: <span style="text-transform: uppercase;">${escapeHtml((state.profile?.df_employment_type || 'full_time').replace('_', ' '))}</span></div>
+                                                <div>SECURITY ROLE: <strong>${escapeHtml(state.user.role.toUpperCase())}</strong></div>
+                                                ${state.profile?.df_phone ? `<div>PHONE: <span class="mono">${escapeHtml(state.profile.df_phone)}</span></div>` : ''}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </main>
                         `;
                     } else if (state.view === 'HR_ADMIN_DASHBOARD') {
+                        const hrStats = state.attendance?.hr_stats || {};
+                        const totalEmp = hrStats.total_employees || (state.employeesList?.length || 0);
+                        const presentToday = hrStats.present_today || 0;
+                        const onLeave = hrStats.on_leave_today || 0;
+                        const pendingLeaves = state.leaves?.pending_approvals?.length || 0;
+
                         contentHtml = `
                             ${navbarHtml}
                             <main class="dashboard-container">
@@ -909,25 +1213,25 @@
                                     <div class="brutal-card" style="padding: 1.5rem;">
                                         <div class="card-title" style="font-size: 0.95rem; color: var(--text-muted);">EMPLOYEES</div>
                                         <div class="stat-box" style="font-size: 3rem; margin: 0.5rem 0 0 0;">
-                                            <span class="stat-box-yellow">42</span>
+                                            <span class="stat-box-yellow">${totalEmp}</span>
                                         </div>
                                     </div>
                                     <div class="brutal-card" style="padding: 1.5rem;">
                                         <div class="card-title" style="font-size: 0.95rem; color: var(--text-muted);">PRESENT TODAY</div>
                                         <div class="stat-box" style="font-size: 3rem; margin: 0.5rem 0 0 0;">
-                                            <span class="stat-box-green">37</span>
+                                            <span class="stat-box-green">${presentToday}</span>
                                         </div>
                                     </div>
                                     <div class="brutal-card" style="padding: 1.5rem;">
                                         <div class="card-title" style="font-size: 0.95rem; color: var(--text-muted);">ON LEAVE</div>
                                         <div class="stat-box" style="font-size: 3rem; margin: 0.5rem 0 0 0;">
-                                            <span style="background: var(--accent-blue); color: #fff; display: inline-block; padding: 0.2rem 0.8rem; border: 3px solid #000; box-shadow: 3px 3px 0px #000;">5</span>
+                                            <span style="background: var(--accent-blue); color: #fff; display: inline-block; padding: 0.2rem 0.8rem; border: 3px solid #000; box-shadow: 3px 3px 0px #000;">${onLeave}</span>
                                         </div>
                                     </div>
                                     <div class="brutal-card" style="padding: 1.5rem;">
                                         <div class="card-title" style="font-size: 0.95rem; color: var(--text-muted);">PENDING LEAVE</div>
                                         <div class="stat-box" style="font-size: 3rem; margin: 0.5rem 0 0 0;">
-                                            <span class="stat-box-rose">3</span>
+                                            <span class="stat-box-rose">${pendingLeaves}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -935,39 +1239,287 @@
                                 <!-- HR NAVIGATION & MANAGEMENT GRID -->
                                 <div class="grid-2x2">
                                     <div class="brutal-card">
-                                        <div class="card-header-bar">
-                                            <div class="card-title">👥 EMPLOYEES</div>
-                                            <button class="btn-brutal" style="padding: 0.3rem 0.8rem; font-size: 0.8rem;">MANAGE</button>
+                                        <div>
+                                            <div class="card-header-bar">
+                                                <div class="card-title">👥 EMPLOYEES</div>
+                                                <button class="btn-brutal" style="padding: 0.3rem 0.8rem; font-size: 0.8rem;" onclick="openModal('EMPLOYEE_DIRECTORY')">DIRECTORY</button>
+                                            </div>
+                                            <p style="font-weight: 700; color: var(--text-muted);">View, inspect canonical profiles, employee IDs, and role privileges across the company.</p>
                                         </div>
-                                        <p style="font-weight: 700; color: var(--text-muted);">View, register, and update canonical employee profiles and organizational structures.</p>
                                     </div>
                                     <div class="brutal-card">
-                                        <div class="card-header-bar">
-                                            <div class="card-title">⏱️ ATTENDANCE</div>
-                                            <button class="btn-brutal" style="padding: 0.3rem 0.8rem; font-size: 0.8rem;">LOGS</button>
+                                        <div>
+                                            <div class="card-header-bar">
+                                                <div class="card-title">⏱️ ATTENDANCE</div>
+                                                <button class="btn-brutal" style="padding: 0.3rem 0.8rem; font-size: 0.8rem;" onclick="openModal('ATTENDANCE_LOGS')">LOGS</button>
+                                            </div>
+                                            <p style="font-weight: 700; color: var(--text-muted);">Audit daily check-in times, worked hours, and employee check-in compliance logs.</p>
                                         </div>
-                                        <p style="font-weight: 700; color: var(--text-muted);">Audit daily check-in times, work hours, overtime, and presence logs.</p>
                                     </div>
                                     <div class="brutal-card">
-                                        <div class="card-header-bar">
-                                            <div class="card-title">📋 LEAVE APPROVALS</div>
-                                            <button class="btn-brutal" style="padding: 0.3rem 0.8rem; font-size: 0.8rem; background: var(--accent-yellow);">3 NEW</button>
+                                        <div>
+                                            <div class="card-header-bar">
+                                                <div class="card-title">📋 LEAVE APPROVALS</div>
+                                                <button class="btn-brutal" style="padding: 0.3rem 0.8rem; font-size: 0.8rem; background: var(--accent-yellow);" onclick="openModal('PENDING_LEAVES')">${pendingLeaves} NEW</button>
+                                            </div>
+                                            <p style="font-weight: 700; color: var(--text-muted);">Review pending leave submissions and approve or reject time-off requests with real-time audit logs.</p>
                                         </div>
-                                        <p style="font-weight: 700; color: var(--text-muted);">Review, approve, or reject employee leave requests and time-off balances.</p>
                                     </div>
                                     <div class="brutal-card">
-                                        <div class="card-header-bar">
-                                            <div class="card-title">💼 PAYROLL</div>
-                                            <button class="btn-brutal" style="padding: 0.3rem 0.8rem; font-size: 0.8rem; background: var(--accent-green);">PROCESS</button>
+                                        <div>
+                                            <div class="card-header-bar">
+                                                <div class="card-title">💼 PAYROLL</div>
+                                                <button class="btn-brutal" style="padding: 0.3rem 0.8rem; font-size: 0.8rem; background: var(--accent-green);" onclick="openModal('PAYROLL_OVERVIEW')">VIEW SLIPS</button>
+                                            </div>
+                                            <p style="font-weight: 700; color: var(--text-muted);">Inspect salary structures, basic pay, deductions, gross totals, and net payout records.</p>
                                         </div>
-                                        <p style="font-weight: 700; color: var(--text-muted);">Generate monthly salary slips, tax computations, and dispatch payment records.</p>
                                     </div>
                                 </div>
                             </main>
                         `;
                     }
 
-                    root.innerHTML = contentHtml;
+                    // Append Modals if Active
+                    let modalHtml = '';
+                    if (state.activeModal === 'APPLY_LEAVE') {
+                        modalHtml = `
+                            <div class="modal-overlay" onclick="if(event.target === this) closeModal()">
+                                <div class="modal-box">
+                                    <div class="modal-header">
+                                        <div class="modal-title">📝 APPLY FOR TIME OFF</div>
+                                        <button class="btn-close-modal" onclick="closeModal()">✕</button>
+                                    </div>
+                                    <form onsubmit="handleApplyLeaveSubmit(event)">
+                                        <div class="form-group">
+                                            <label class="form-label" for="leave-type">LEAVE CATEGORY</label>
+                                            <select id="leave-type" class="form-select" required="required">
+                                                <option value="paid">PAID LEAVE</option>
+                                                <option value="sick">SICK LEAVE</option>
+                                                <option value="unpaid">UNPAID LEAVE</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                            <div>
+                                                <label class="form-label" for="leave-from">FROM DATE</label>
+                                                <input type="date" id="leave-from" class="form-input" required="required" />
+                                            </div>
+                                            <div>
+                                                <label class="form-label" for="leave-to">TO DATE</label>
+                                                <input type="date" id="leave-to" class="form-input" required="required" />
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="form-label" for="leave-remarks">REASON / REMARKS</label>
+                                            <textarea id="leave-remarks" class="form-textarea" rows="3" placeholder="Provide leave context..."></textarea>
+                                        </div>
+                                        <button type="submit" class="btn-submit" ${state.loading ? 'disabled' : ''}>
+                                            ${state.loading ? '<span class="spinner-block"></span> SUBMITTING...' : 'SUBMIT REQUEST'}
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        `;
+                    } else if (state.activeModal === 'LEAVE_HISTORY') {
+                        const myLeaves = state.leaves?.my_leaves || [];
+                        modalHtml = `
+                            <div class="modal-overlay" onclick="if(event.target === this) closeModal()">
+                                <div class="modal-box" style="max-width: 800px;">
+                                    <div class="modal-header">
+                                        <div class="modal-title">📅 MY LEAVE HISTORY</div>
+                                        <button class="btn-close-modal" onclick="closeModal()">✕</button>
+                                    </div>
+                                    ${myLeaves.length === 0 ? '<p style=\"font-weight:700;\">No leave requests found.</p>' : `
+                                        <table class="brutal-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>TYPE</th>
+                                                    <th>DATES</th>
+                                                    <th>DAYS</th>
+                                                    <th>STATUS</th>
+                                                    <th>DECIDED BY</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                ${myLeaves.map(l => `
+                                                    <tr>
+                                                        <td><strong>${escapeHtml(l.leave_type_label)}</strong></td>
+                                                        <td class="mono">${escapeHtml(l.date_from)} → ${escapeHtml(l.date_to)}</td>
+                                                        <td class="mono">${l.number_of_days}</td>
+                                                        <td>
+                                                            <span class="badge-role ${l.state === 'approved' ? 'badge-employee' : (l.state === 'rejected' ? 'badge-rose' : 'badge-yellow')}" style="padding:0.2rem 0.5rem; font-size:0.75rem;">
+                                                                ${escapeHtml(l.state.toUpperCase())}
+                                                            </span>
+                                                        </td>
+                                                        <td>${escapeHtml(l.approved_by || '—')}</td>
+                                                    </tr>
+                                                `).join('')}
+                                            </tbody>
+                                        </table>
+                                    `}
+                                </div>
+                            </div>
+                        `;
+                    } else if (state.activeModal === 'ATTENDANCE_LOGS') {
+                        const history = state.attendance?.history || [];
+                        modalHtml = `
+                            <div class="modal-overlay" onclick="if(event.target === this) closeModal()">
+                                <div class="modal-box" style="max-width: 750px;">
+                                    <div class="modal-header">
+                                        <div class="modal-title">⏱️ ATTENDANCE LOGS</div>
+                                        <button class="btn-close-modal" onclick="closeModal()">✕</button>
+                                    </div>
+                                    ${history.length === 0 ? '<p style=\"font-weight:700;\">No attendance records found.</p>' : `
+                                        <table class="brutal-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>DATE</th>
+                                                    <th>CHECK IN</th>
+                                                    <th>CHECK OUT</th>
+                                                    <th>HOURS</th>
+                                                    <th>STATUS</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                ${history.map(h => `
+                                                    <tr>
+                                                        <td class="mono">${escapeHtml(h.date)}</td>
+                                                        <td class="mono">${escapeHtml(h.check_in ? h.check_in.split(' ')[1] : '—')}</td>
+                                                        <td class="mono">${escapeHtml(h.check_out ? h.check_out.split(' ')[1] : '—')}</td>
+                                                        <td class="mono">${h.worked_hours}</td>
+                                                        <td>
+                                                            <span class="badge-role ${h.status === 'present' ? 'badge-employee' : (h.status === 'leave' ? 'badge-blue' : 'badge-neutral')}" style="padding:0.2rem 0.5rem; font-size:0.75rem;">
+                                                                ${escapeHtml(h.status.toUpperCase())}
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                `).join('')}
+                                            </tbody>
+                                        </table>
+                                    `}
+                                </div>
+                            </div>
+                        `;
+                    } else if (state.activeModal === 'PAYROLL_SLIP' || state.activeModal === 'PAYROLL_OVERVIEW') {
+                        const pay = state.payroll?.latest;
+                        modalHtml = `
+                            <div class="modal-overlay" onclick="if(event.target === this) closeModal()">
+                                <div class="modal-box">
+                                    <div class="modal-header">
+                                        <div class="modal-title">💳 SALARY STATEMENT</div>
+                                        <button class="btn-close-modal" onclick="closeModal()">✕</button>
+                                    </div>
+                                    ${!pay ? '<p style=\"font-weight:700;\">No payroll records published yet.</p>' : `
+                                        <div style="border: 3px solid #000; padding: 1.5rem; background: #fafaf5; margin-bottom: 1rem;">
+                                            <div style="display:flex; justify-content:space-between; margin-bottom:1rem; border-bottom:2px solid #000; padding-bottom:0.5rem;">
+                                                <strong>PAY PERIOD: <span class="mono">${escapeHtml(pay.pay_period)}</span></strong>
+                                                <span class="badge-role badge-employee">${escapeHtml(pay.state.toUpperCase())}</span>
+                                            </div>
+                                            <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; font-size: 0.95rem; font-weight:700;">
+                                                <div>BASIC SALARY:</div>
+                                                <div class="mono" style="text-align:right;">${pay.currency}${pay.basic_salary.toLocaleString()}</div>
+                                                <div>HRA ALLOWANCE:</div>
+                                                <div class="mono" style="text-align:right;">${pay.currency}${pay.house_rent_allowance.toLocaleString()}</div>
+                                                <div>TRANSPORT:</div>
+                                                <div class="mono" style="text-align:right;">${pay.currency}${pay.transport_allowance.toLocaleString()}</div>
+                                                <div style="border-top:2px solid #000; padding-top:0.3rem;"><strong>GROSS SALARY:</strong></div>
+                                                <div class="mono" style="border-top:2px solid #000; padding-top:0.3rem; text-align:right;"><strong>${pay.currency}${pay.gross_salary.toLocaleString()}</strong></div>
+                                                <div style="color:var(--accent-rose);">PF DEDUCTION:</div>
+                                                <div class="mono" style="text-align:right; color:var(--accent-rose);">${pay.currency}${pay.provident_fund.toLocaleString()}</div>
+                                                <div style="color:var(--accent-rose);">TAX DEDUCTION:</div>
+                                                <div class="mono" style="text-align:right; color:var(--accent-rose);">${pay.currency}${pay.tax_deduction.toLocaleString()}</div>
+                                                <div style="border-top:3px solid #000; padding-top:0.5rem; font-size:1.1rem;"><strong>NET PAYOUT:</strong></div>
+                                                <div class="mono" style="border-top:3px solid #000; padding-top:0.5rem; text-align:right; font-size:1.1rem; background:var(--accent-green); padding:0.2rem 0.5rem; border:2px solid #000;"><strong>${pay.currency}${pay.net_salary.toLocaleString()}</strong></div>
+                                            </div>
+                                        </div>
+                                    `}
+                                </div>
+                            </div>
+                        `;
+                    } else if (state.activeModal === 'EMPLOYEE_DIRECTORY') {
+                        const emps = state.employeesList || [];
+                        modalHtml = `
+                            <div class="modal-overlay" onclick="if(event.target === this) closeModal()">
+                                <div class="modal-box" style="max-width: 850px;">
+                                    <div class="modal-header">
+                                        <div class="modal-title">👥 EMPLOYEE DIRECTORY</div>
+                                        <button class="btn-close-modal" onclick="closeModal()">✕</button>
+                                    </div>
+                                    <table class="brutal-table">
+                                        <thead>
+                                            <tr>
+                                                <th>CODE</th>
+                                                <th>NAME</th>
+                                                <th>EMAIL</th>
+                                                <th>ROLE</th>
+                                                <th>EMPLOYMENT</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            ${emps.map(e => `
+                                                <tr>
+                                                    <td class="mono"><strong>${escapeHtml(e.employee_code)}</strong></td>
+                                                    <td>${escapeHtml(e.name)}</td>
+                                                    <td class="mono">${escapeHtml(e.work_email)}</td>
+                                                    <td>
+                                                        <span class="badge-role ${e.df_role === 'hr_admin' ? 'badge-admin' : 'badge-employee'}" style="padding:0.15rem 0.4rem; font-size:0.7rem;">
+                                                            ${escapeHtml(e.df_role.toUpperCase())}
+                                                        </span>
+                                                    </td>
+                                                    <td style="text-transform: uppercase;">${escapeHtml(e.df_employment_type.replace('_', ' '))}</td>
+                                                </tr>
+                                            `).join('')}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        `;
+                    } else if (state.activeModal === 'PENDING_LEAVES') {
+                        const pendings = state.leaves?.pending_approvals || [];
+                        modalHtml = `
+                            <div class="modal-overlay" onclick="if(event.target === this) closeModal()">
+                                <div class="modal-box" style="max-width: 850px;">
+                                    <div class="modal-header">
+                                        <div class="modal-title">📋 PENDING LEAVE APPROVALS</div>
+                                        <button class="btn-close-modal" onclick="closeModal()">✕</button>
+                                    </div>
+                                    ${pendings.length === 0 ? '<p style=\"font-weight:700;\">No pending leave requests awaiting approval.</p>' : `
+                                        <table class="brutal-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>EMPLOYEE</th>
+                                                    <th>TYPE</th>
+                                                    <th>DATES</th>
+                                                    <th>DAYS</th>
+                                                    <th>ACTIONS</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                ${pendings.map(p => `
+                                                    <tr>
+                                                        <td>
+                                                            <strong>${escapeHtml(p.employee_name)}</strong>
+                                                            <div class="mono" style="font-size:0.75rem; color:var(--text-muted);">ID: ${escapeHtml(p.employee_code)}</div>
+                                                        </td>
+                                                        <td>${escapeHtml(p.leave_type_label)}</td>
+                                                        <td class="mono">${escapeHtml(p.date_from)} → ${escapeHtml(p.date_to)}</td>
+                                                        <td class="mono">${p.number_of_days}</td>
+                                                        <td>
+                                                            <div style="display:flex; gap:0.4rem;">
+                                                                <button class="btn-brutal" style="background:var(--accent-green); padding:0.25rem 0.6rem; font-size:0.75rem;" onclick="handleApproveLeave(${p.id})">APPROVE</button>
+                                                                <button class="btn-brutal" style="background:var(--accent-rose); color:#fff; padding:0.25rem 0.6rem; font-size:0.75rem;" onclick="handleRejectLeave(${p.id})">REJECT</button>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                `).join('')}
+                                            </tbody>
+                                        </table>
+                                    `}
+                                </div>
+                            </div>
+                        `;
+                    }
+
+                    root.innerHTML = contentHtml + modalHtml;
                 }
 
                 function escapeHtml(str) {
@@ -982,7 +1534,7 @@
 
                 // Run init on DOM load
                 document.addEventListener('DOMContentLoaded', initApp);
-            //]]>
+            ]]>
             </script>
         </body>
         </html>

@@ -125,11 +125,11 @@ class DayflowAttendance(models.Model):
                         % (rec.employee_id.name, rec.date)
                     )
 
-    @api.constrains('date')
+    @api.constrains('date', 'status')
     def _check_not_future(self):
         today = fields.Date.context_today(self)
         for rec in self:
-            if rec.date and rec.date > today:
+            if rec.status != 'leave' and rec.date and rec.date > today:
                 raise ValidationError(
                     _('Attendance date cannot be in the future.')
                 )
