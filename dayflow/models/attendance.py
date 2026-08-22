@@ -1,12 +1,24 @@
 # -*- coding: utf-8 -*-
 """
 Dayflow – Attendance Model
+Owner: KUNAM (Attendance & Leave workflow/UI)
+Stub author: Mani (HR Core) — handed off to Kunam for full implementation.
 
-Team contract:
-  model   : dayflow.attendance
-  fields  : employee_id, date, check_in, check_out, status, notes
-  states  : present | absent | half_day | leave
-  rules   : one record per employee per date; check_out >= check_in
+NOTE TO KUNAM:
+  This is your model. The fields, constraints, and computed values are
+  provided as a clean starting point. Add your check-in/check-out workflow
+  methods (action_check_in, action_check_out) and any UI-specific logic here.
+  Reference hr.employee via employee_id — do NOT add a separate df_employee_id
+  Char field here; use the Many2one to hr.employee.
+
+INTEGRATION CONTRACT (stable — do not rename without telling Suraj):
+  Model name    : dayflow.attendance
+  Employee FK   : employee_id  → hr.employee (Many2one)
+  Date field    : date          (Date, unique per employee)
+  Check-in      : check_in     (Datetime)
+  Check-out     : check_out    (Datetime)
+  Worked hours  : working_hours (Float, computed)
+  Status values : present | absent | half_day | leave
 """
 
 from odoo import models, fields, api
@@ -15,9 +27,8 @@ from odoo.exceptions import ValidationError
 
 class DayflowAttendance(models.Model):
     _name = 'dayflow.attendance'
-    _description = 'Dayflow Attendance Record'
+    _description = 'Dayflow Attendance'
     _order = 'date desc, employee_id'
-    _inherit = ['mail.thread', 'mail.activity.mixin']  # chatter for audit
 
     # ------------------------------------------------------------------
     # Core fields
@@ -26,60 +37,33 @@ class DayflowAttendance(models.Model):
         comodel_name='hr.employee',
         string='Employee',
         required=True,
-        ondelete='restrict',
+        ondelete='cascade',
         index=True,
-        tracking=True,
     )
     date = fields.Date(
         string='Date',
         required=True,
-        default=fields.Date.today,
-        index=True,
-        tracking=True,
+        default=fields.Date.context_today,
     )
-    check_in = fields.Datetime(
-        string='Check In',
-        tracking=True,
-    )
-    check_out = fields.Datetime(
-        string='Check Out',
-        tracking=True,
-    )
-    status = fields.Selection(
-        selection=[
-            ('present', 'Present'),
-            ('absent', 'Absent'),
-            ('half_day', 'Half Day'),
-            ('leave', 'On Leave'),
-        ],
-        string='Status',
-        required=True,
-        default='absent',
-        tracking=True,
-    )
-    notes = fields.Text(string='Notes')
+    check_in = fields.Datetime(string='Check In')
+    check_out = fields.Datetime(string='Check Out')
 
-    # ------------------------------------------------------------------
-    # Computed: working hours
-    # ------------------------------------------------------------------
+    status = fields.Selection([
+        ('present',  'Present'),
+        ('absent',   'Absent'),
+        ('half_day', 'Half Day'),
+        ('leave',    'Leave'),
+    ], string='Status', required=True, default='absent')
+
     working_hours = fields.Float(
         string='Working Hours',
         compute='_compute_working_hours',
         store=True,
-        help='Hours between check-in and check-out',
     )
-
-    @api.depends('check_in', 'check_out')
-    def _compute_working_hours(self):
-        for rec in self:
-            if rec.check_in and rec.check_out:
-                delta = rec.check_out - rec.check_in
-                rec.working_hours = delta.total_seconds() / 3600.0
-            else:
-                rec.working_hours = 0.0
+    notes = fields.Text(string='Notes')
 
     # ------------------------------------------------------------------
-    # SQL constraint: one record per employee per date
+    # SQL constraint — one record per employee per date
     # ------------------------------------------------------------------
     _sql_constraints = [
         (
@@ -90,77 +74,46 @@ class DayflowAttendance(models.Model):
     ]
 
     # ------------------------------------------------------------------
-    # Python constraints
+    # Computed
+    # ------------------------------------------------------------------
+    @api.depends('check_in', 'check_out')
+    def _compute_working_hours(self):
+        for rec in self:
+            if rec.check_in and rec.check_out:
+                delta = rec.check_out - rec.check_in
+                rec.working_hours = delta.total_seconds() / 3600.0
+            else:
+                rec.working_hours = 0.0
+
+    # ------------------------------------------------------------------
+    # Constraints
     # ------------------------------------------------------------------
     @api.constrains('check_in', 'check_out')
     def _check_times(self):
         for rec in self:
             if rec.check_in and rec.check_out:
-                if rec.check_out < rec.check_in:
+                if rec.check_out <= rec.check_in:
                     raise ValidationError(
-                        'Check-out time cannot be earlier than check-in time.'
+                        'Check-out time must be after check-in time.'
                     )
 
     @api.constrains('check_in', 'date')
-    def _check_in_date_match(self):
+    def _check_checkin_matches_date(self):
         for rec in self:
             if rec.check_in and rec.date:
                 if rec.check_in.date() != rec.date:
                     raise ValidationError(
-                        'Check-in datetime must fall on the same date as the attendance record date.'
+                        'Check-in datetime must be on the same date as the attendance record.'
                     )
 
     # ------------------------------------------------------------------
-    # Auto-set status based on check-in presence
+    # KUNAM: Add action_check_in() and action_check_out() here.
+    # Suggested signature:
+    #
+    #   @api.model
+    #   def action_check_in(self, employee_id=None):
+    #       ...
+    #
+    #   def action_check_out(self):
+    #       ...
     # ------------------------------------------------------------------
-    @api.onchange('check_in', 'check_out')
-    def _onchange_times_set_status(self):
-        """Convenience: auto-suggest status when times are entered."""
-        if self.check_in and self.check_out:
-            hours = (self.check_out - self.check_in).total_seconds() / 3600.0
-            if hours >= 4:
-                self.status = 'present'
-            elif hours > 0:
-                self.status = 'half_day'
-        elif self.check_in:
-            self.status = 'present'
-
-    # ------------------------------------------------------------------
-    # Employee check-in action (called from UI button / Kunam's workflow)
-    # ------------------------------------------------------------------
-    @api.model
-    def action_check_in(self, employee_id):
-        """
-        Create or update today's attendance record with check-in time.
-        Returns the attendance record.
-        """
-        today = fields.Date.today()
-        now = fields.Datetime.now()
-        record = self.search([
-            ('employee_id', '=', employee_id),
-            ('date', '=', today),
-        ], limit=1)
-        if record:
-            if record.check_in:
-                raise ValidationError('Already checked in today.')
-            record.write({'check_in': now, 'status': 'present'})
-        else:
-            record = self.create({
-                'employee_id': employee_id,
-                'date': today,
-                'check_in': now,
-                'status': 'present',
-            })
-        return record
-
-    def action_check_out(self):
-        """Check out the current employee. Called on the record directly."""
-        self.ensure_one()
-        if not self.check_in:
-            raise ValidationError('Cannot check out without a check-in record.')
-        if self.check_out:
-            raise ValidationError('Already checked out today.')
-        now = fields.Datetime.now()
-        hours = (now - self.check_in).total_seconds() / 3600.0
-        status = 'present' if hours >= 4 else 'half_day'
-        self.write({'check_out': now, 'status': status})

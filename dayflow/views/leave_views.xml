@@ -1,4 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Dayflow Leave Views
+    Owner: KUNAM (Attendance & Leave workflow/UI)
+    Stub author: Mani — handed off for full UI implementation.
+
+    NOTE TO KUNAM: Extend or replace these views in your branch.
+    Group references use the canonical group_dayflow_hr_admin.
+-->
 <odoo>
     <data>
 
@@ -11,7 +19,7 @@
             <field name="arch" type="xml">
                 <tree string="Leave Requests"
                       decoration-success="status == 'approved'"
-                      decoration-danger="status == 'rejected'"
+                      decoration-danger="status  == 'rejected'"
                       decoration-warning="status == 'draft'">
                     <field name="employee_id"/>
                     <field name="leave_type"/>
@@ -33,19 +41,18 @@
             <field name="arch" type="xml">
                 <form string="Leave Request">
                     <header>
-                        <!-- HR/Admin action buttons -->
                         <button name="action_approve" string="Approve"
                                 type="object" class="btn-success"
                                 attrs="{'invisible': [('status', '!=', 'draft')]}"
-                                groups="dayflow.group_dayflow_hr"/>
+                                groups="dayflow.group_dayflow_hr_admin"/>
                         <button name="action_reject" string="Reject"
                                 type="object" class="btn-danger"
                                 attrs="{'invisible': [('status', '!=', 'draft')]}"
-                                groups="dayflow.group_dayflow_hr"/>
+                                groups="dayflow.group_dayflow_hr_admin"/>
                         <button name="action_reset_to_draft" string="Reset to Pending"
                                 type="object"
                                 attrs="{'invisible': [('status', '!=', 'rejected')]}"
-                                groups="dayflow.group_dayflow_hr"/>
+                                groups="dayflow.group_dayflow_hr_admin"/>
                         <field name="status" widget="statusbar"
                                statusbar_visible="draft,approved,rejected"/>
                     </header>
@@ -68,13 +75,14 @@
                                 <field name="approved_date" readonly="1"/>
                             </group>
                         </group>
-                        <group string="Remarks (Employee)">
-                            <field name="remarks" nolabel="1" placeholder="Reason for leave..."
+                        <group string="Remarks">
+                            <field name="remarks" nolabel="1"
+                                   placeholder="Reason for leave..."
                                    attrs="{'readonly': [('status', '!=', 'draft')]}"/>
                         </group>
-                        <group string="HR Comment"
-                               groups="dayflow.group_dayflow_hr">
-                            <field name="hr_comment" nolabel="1" placeholder="HR notes on this request..."/>
+                        <group string="HR Comment" groups="dayflow.group_dayflow_hr_admin">
+                            <field name="hr_comment" nolabel="1"
+                                   placeholder="HR notes on this request..."/>
                         </group>
                     </sheet>
                     <div class="oe_chatter">
@@ -97,22 +105,28 @@
                     <field name="employee_id"/>
                     <field name="leave_type"/>
                     <field name="status"/>
-                    <filter string="Pending"  name="filter_pending"  domain="[('status', '=', 'draft')]"/>
-                    <filter string="Approved" name="filter_approved" domain="[('status', '=', 'approved')]"/>
-                    <filter string="Rejected" name="filter_rejected" domain="[('status', '=', 'rejected')]"/>
+                    <filter string="Pending"  name="filter_pending"
+                            domain="[('status', '=', 'draft')]"/>
+                    <filter string="Approved" name="filter_approved"
+                            domain="[('status', '=', 'approved')]"/>
+                    <filter string="Rejected" name="filter_rejected"
+                            domain="[('status', '=', 'rejected')]"/>
                     <filter string="My Requests" name="filter_mine"
                             domain="[('employee_id.user_id', '=', uid)]"/>
                     <group expand="0" string="Group By">
-                        <filter string="Employee"   name="group_employee"   context="{'group_by': 'employee_id'}"/>
-                        <filter string="Leave Type" name="group_leave_type" context="{'group_by': 'leave_type'}"/>
-                        <filter string="Status"     name="group_status"     context="{'group_by': 'status'}"/>
+                        <filter string="Employee"   name="group_employee"
+                                context="{'group_by': 'employee_id'}"/>
+                        <filter string="Leave Type" name="group_type"
+                                context="{'group_by': 'leave_type'}"/>
+                        <filter string="Status"     name="group_status"
+                                context="{'group_by': 'status'}"/>
                     </group>
                 </search>
             </field>
         </record>
 
         <!-- ============================================================
-             LEAVE REQUEST — Actions
+             LEAVE REQUEST — Window Actions
         ============================================================ -->
         <record id="action_dayflow_leave_all" model="ir.actions.act_window">
             <field name="name">All Leave Requests</field>

@@ -1,4 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Dayflow HRMS — Main Menu
+    Uses canonical security groups. Do not reference group_dayflow_hr here.
+-->
 <odoo>
     <data>
 
@@ -7,17 +11,16 @@
         ============================================================ -->
         <menuitem id="menu_dayflow_root"
                   name="Dayflow HRMS"
-                  sequence="10"
-                  web_icon="dayflow,static/description/icon.png"/>
+                  sequence="10"/>
 
         <!-- ============================================================
-             EMPLOYEE MENU
+             EMPLOYEES (HR Admin only)
         ============================================================ -->
         <menuitem id="menu_dayflow_employees"
                   name="Employees"
                   parent="menu_dayflow_root"
                   sequence="10"
-                  groups="dayflow.group_dayflow_hr"/>
+                  groups="dayflow.group_dayflow_hr_admin"/>
 
         <menuitem id="menu_dayflow_employee_list"
                   name="All Employees"
@@ -26,7 +29,7 @@
                   sequence="10"/>
 
         <!-- ============================================================
-             ATTENDANCE MENU
+             ATTENDANCE
         ============================================================ -->
         <menuitem id="menu_dayflow_attendance"
                   name="Attendance"
@@ -38,7 +41,7 @@
                   parent="menu_dayflow_attendance"
                   action="action_dayflow_attendance"
                   sequence="10"
-                  groups="dayflow.group_dayflow_hr"/>
+                  groups="dayflow.group_dayflow_hr_admin"/>
 
         <menuitem id="menu_dayflow_attendance_my"
                   name="My Attendance"
@@ -48,7 +51,7 @@
                   groups="dayflow.group_dayflow_employee"/>
 
         <!-- ============================================================
-             LEAVE MENU
+             LEAVE
         ============================================================ -->
         <menuitem id="menu_dayflow_leave"
                   name="Leave"
@@ -60,7 +63,7 @@
                   parent="menu_dayflow_leave"
                   action="action_dayflow_leave_all"
                   sequence="10"
-                  groups="dayflow.group_dayflow_hr"/>
+                  groups="dayflow.group_dayflow_hr_admin"/>
 
         <menuitem id="menu_dayflow_leave_my"
                   name="My Leave"
@@ -69,7 +72,7 @@
                   sequence="20"/>
 
         <!-- ============================================================
-             PAYROLL MENU
+             PAYROLL
         ============================================================ -->
         <menuitem id="menu_dayflow_payroll"
                   name="Payroll"
@@ -81,7 +84,7 @@
                   parent="menu_dayflow_payroll"
                   action="action_dayflow_payroll"
                   sequence="10"
-                  groups="dayflow.group_dayflow_hr"/>
+                  groups="dayflow.group_dayflow_hr_admin"/>
 
         <menuitem id="menu_dayflow_payroll_my"
                   name="My Salary"
@@ -90,14 +93,14 @@
                   sequence="20"/>
 
         <!-- ============================================================
-             AUDIT LOG MENU (HR only)
+             AUDIT LOG (HR Admin only)
         ============================================================ -->
         <menuitem id="menu_dayflow_audit"
                   name="Audit Log"
                   parent="menu_dayflow_root"
                   action="action_dayflow_audit_log"
                   sequence="90"
-                  groups="dayflow.group_dayflow_hr"/>
+                  groups="dayflow.group_dayflow_hr_admin"/>
 
     </data>
 </odoo>
