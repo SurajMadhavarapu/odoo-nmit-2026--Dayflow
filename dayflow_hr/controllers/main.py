@@ -28,11 +28,14 @@ class DayflowAuthController(http.Controller):
                 role=role,
                 name=name
             )
+            request.env.cr.commit()
             return res
         except ValidationError as e:
+            request.env.cr.rollback()
             return {'status': 'error', 'code': 'validation_error', 'message': str(e)}
         except Exception as e:
-            return {'status': 'error', 'code': 'server_error', 'message': 'Registration failed. Please verify user details.'}
+            request.env.cr.rollback()
+            return {'status': 'error', 'code': 'server_error', 'message': f'Registration failed: {str(e)}'}
 
     @http.route(['/dayflow/auth/login', '/api/dayflow/login'], type='json', auth='none', methods=['POST'], csrf=False)
     def login(self, **kwargs):
@@ -54,7 +57,7 @@ class DayflowAuthController(http.Controller):
             if not uid:
                 return {'status': 'error', 'code': 'invalid_credentials', 'message': 'Invalid email/login or password.'}
 
-            user = request.env['res.users'].browse(uid)
+            user = request.env['res.users'].sudo().browse(uid)
             if not user.active:
                 return {'status': 'error', 'code': 'inactive_user', 'message': 'User account is inactive.'}
 
@@ -82,8 +85,10 @@ class DayflowAuthController(http.Controller):
                 'employee_code': employee.employee_code if employee else False,
             }
         except AccessDenied:
+            request.env.cr.rollback()
             return {'status': 'error', 'code': 'invalid_credentials', 'message': 'Invalid email/login or password.'}
         except Exception as e:
+            request.env.cr.rollback()
             return {'status': 'error', 'code': 'auth_failed', 'message': 'Authentication failed.'}
 
     @http.route('/dayflow/auth/logout', type='json', auth='user', methods=['POST'], csrf=False)
