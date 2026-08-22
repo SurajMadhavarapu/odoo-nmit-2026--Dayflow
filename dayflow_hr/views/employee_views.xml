@@ -35,7 +35,7 @@
             <!-- Employee ID field, HR Admin editable, read-only after first save -->
             <xpath expr="//field[@name='name']" position="after">
                 <field name="employee_code"
-                       readonly="id != False"
+                       readonly="id"
                        groups="dayflow_hr.group_dayflow_hr_admin"/>
             </xpath>
 

@@ -120,6 +120,7 @@ class HrEmployee(models.Model):
         compute='_compute_df_counts',
     )
 
+    @api.depends('df_attendance_ids', 'df_leave_ids')
     def _compute_df_counts(self):
         for rec in self:
             rec.df_attendance_count = len(rec.df_attendance_ids)

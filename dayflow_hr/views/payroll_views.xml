@@ -75,29 +75,12 @@
                         <field name="other_allowances"/>
                         <field name="gross_salary" readonly="1"/>
                     </group>
-                    <!-- Earnings: read-only view for employees -->
-                    <group string="Earnings"
-                           groups="dayflow_hr.group_dayflow_employee">
-                        <field name="basic_salary" readonly="1"/>
-                        <field name="house_rent_allowance" readonly="1"/>
-                        <field name="transport_allowance" readonly="1"/>
-                        <field name="other_allowances" readonly="1"/>
-                        <field name="gross_salary" readonly="1"/>
-                    </group>
                     <!-- Deductions: HR Admin editable -->
                     <group string="Deductions"
                            groups="dayflow_hr.group_dayflow_hr_admin">
                         <field name="provident_fund"/>
                         <field name="tax_deduction"/>
                         <field name="other_deductions"/>
-                        <field name="total_deductions" readonly="1"/>
-                    </group>
-                    <!-- Deductions: read-only for employees -->
-                    <group string="Deductions"
-                           groups="dayflow_hr.group_dayflow_employee">
-                        <field name="provident_fund" readonly="1"/>
-                        <field name="tax_deduction" readonly="1"/>
-                        <field name="other_deductions" readonly="1"/>
                         <field name="total_deductions" readonly="1"/>
                     </group>
                     <group string="Net">

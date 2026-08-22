@@ -40,13 +40,13 @@
                             string="Check In"
                             type="object"
                             class="btn-primary"
-                            invisible="check_in != False"/>
+                            invisible="check_in"/>
                     <!-- Check Out: visible only when checked in but not yet out -->
                     <button name="action_check_out"
                             string="Check Out"
                             type="object"
                             class="btn-secondary"
-                            invisible="check_in == False or check_out != False"/>
+                            invisible="not check_in or check_out"/>
                     <field name="status" widget="statusbar"
                            statusbar_visible="absent,present,half_day,leave"/>
                 </header>
@@ -55,7 +55,7 @@
                         <group string="Who / When">
                             <!-- HR Admin: can change employee on new records only -->
                             <field name="employee_id"
-                                   readonly="id != False"
+                                   readonly="id"
                                    groups="dayflow_hr.group_dayflow_hr_admin"/>
                             <field name="date"/>
                         </group>
@@ -86,7 +86,7 @@
                         domain="[('date', '=', context_today().strftime('%Y-%m-%d'))]"/>
                 <filter string="This Week"
                         name="this_week"
-                        domain="[('date', '&gt;=', (context_today() - relativedelta(days=context_today().weekday())).strftime('%Y-%m-%d'))]"/>
+                        domain="[('date', '&gt;=', (context_today() - timedelta(days=context_today().weekday())).strftime('%Y-%m-%d'))]"/>
                 <separator/>
                 <filter string="Present"  name="present"  domain="[('status', '=', 'present')]"/>
                 <filter string="Absent"   name="absent"   domain="[('status', '=', 'absent')]"/>
